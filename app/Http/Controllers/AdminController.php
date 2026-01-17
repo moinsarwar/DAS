@@ -282,7 +282,7 @@ class AdminController extends Controller
         $request->validate([
             'name' => 'required|string|max:255',
             'mobile_number' => 'required|string|max:20',
-            'cnic' => 'required|string', // Removed unique
+            'cnic' => 'required|numeric|digits:13', // No dashes, 13 digits
         ]);
 
         $mrNumber = User::generateMrNumber();
@@ -428,8 +428,10 @@ class AdminController extends Controller
     {
         $request->validate([
             'phone' => 'required|string',
+            'landline' => 'nullable|string',
+            'contact_email' => 'nullable|email',
             'address' => 'required|string',
-            'logo' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            'logo' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg',
         ]);
 
         $settings = \App\Models\ClinicSetting::first();
@@ -438,6 +440,8 @@ class AdminController extends Controller
         }
 
         $settings->phone = $request->phone;
+        $settings->landline = $request->landline;
+        $settings->contact_email = $request->contact_email;
         $settings->address = $request->address;
 
         if ($request->hasFile('logo')) {
@@ -452,5 +456,23 @@ class AdminController extends Controller
         $settings->save();
 
         return back()->with('success', 'Settings updated successfully.');
+    }
+    // Contact Messages
+    public function messages()
+    {
+        $messages = \App\Models\ContactMessage::orderBy('created_at', 'desc')->get();
+        return view('admin.messages', compact('messages'));
+    }
+
+    public function markMessageRead($id)
+    {
+        \App\Models\ContactMessage::findOrFail($id)->update(['is_read' => true]);
+        return back()->with('success', 'Message marked as read.');
+    }
+
+    public function deleteMessage($id)
+    {
+        \App\Models\ContactMessage::findOrFail($id)->delete();
+        return back()->with('success', 'Message deleted.');
     }
 }

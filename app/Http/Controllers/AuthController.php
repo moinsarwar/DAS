@@ -65,7 +65,6 @@ class AuthController extends Controller
         ])->withInput($request->except('password'));
     }
 
-    /* Public Registration Disabled
     public function showRegister()
     {
         return view('auth.register');
@@ -73,9 +72,30 @@ class AuthController extends Controller
 
     public function register(Request $request)
     {
-       // ...
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'cnic' => 'required|numeric|digits:13|unique:users,cnic', // Strict 13 digits, no dashes
+            'mobile_number' => 'required|string|max:20',
+            'email' => 'nullable|email|max:255|unique:users,email',
+            'address' => 'nullable|string|max:500',
+        ]);
+
+        $mrNumber = \App\Models\User::generateMrNumber();
+
+        // Create the user
+        $user = \App\Models\User::create([
+            'name' => $request->name,
+            'cnic' => $request->cnic,
+            'mobile_number' => $request->mobile_number,
+            'email' => $request->email,
+            'address' => $request->address,
+            'mr_number' => $mrNumber,
+            'role' => 'patient',
+            // No password set as they login with MR Number + CNIC
+        ]);
+
+        return back()->with('success_mr', $mrNumber)->with('cnic_display', $request->cnic);
     }
-    */
 
     public function logout(Request $request)
     {

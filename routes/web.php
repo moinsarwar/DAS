@@ -7,11 +7,17 @@ use App\Http\Controllers\PatientController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [App\Http\Controllers\WelcomeController::class, 'index'])->name('welcome');
+Route::get('/doctors', [App\Http\Controllers\WelcomeController::class, 'doctors'])->name('public.doctors');
+Route::get('/about', [App\Http\Controllers\WelcomeController::class, 'about'])->name('public.about');
+Route::get('/contact', [App\Http\Controllers\WelcomeController::class, 'contact'])->name('public.contact');
+Route::post('/contact', [App\Http\Controllers\WelcomeController::class, 'storeContact'])->name('contact.store');
 
 // Auth Routes
 // Auth Routes
 Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
 Route::post('/login', [AuthController::class, 'login']);
+Route::get('/register', [AuthController::class, 'showRegister'])->name('register');
+Route::post('/register', [AuthController::class, 'register']);
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
 // ===============================
@@ -57,6 +63,11 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     // Admin Profile
     Route::get('/profile', [AdminController::class, 'showProfile'])->name('profile');
     Route::put('/profile', [AdminController::class, 'updateProfile'])->name('profile.update');
+
+    // Messages
+    Route::get('/messages', [AdminController::class, 'messages'])->name('messages');
+    Route::put('/messages/{id}/read', [AdminController::class, 'markMessageRead'])->name('messages.read');
+    Route::delete('/messages/{id}', [AdminController::class, 'deleteMessage'])->name('messages.delete');
 
     // Clinic Settings
     Route::get('/settings', [AdminController::class, 'settings'])->name('settings');

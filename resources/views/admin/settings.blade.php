@@ -24,10 +24,23 @@
                             @endif
                         </div>
 
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Mobile Number</label>
+                                <input type="text" name="phone" class="form-control"
+                                    value="{{ old('phone', $settings->phone ?? '') }}" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Landline Number</label>
+                                <input type="text" name="landline" class="form-control"
+                                    value="{{ old('landline', $settings->landline ?? '') }}">
+                            </div>
+                        </div>
+
                         <div class="mb-3">
-                            <label class="form-label">Phone Number</label>
-                            <input type="text" name="phone" class="form-control"
-                                value="{{ old('phone', $settings->phone ?? '') }}" required>
+                            <label class="form-label">Contact Email</label>
+                            <input type="email" name="contact_email" class="form-control"
+                                value="{{ old('contact_email', $settings->contact_email ?? '') }}">
                         </div>
 
                         <div class="mb-3">
