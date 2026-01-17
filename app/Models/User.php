@@ -26,6 +26,7 @@ class User extends Authenticatable
         'profile_photo',
         'cnic',
         'mr_number',
+        'address',
     ];
 
     public function doctor()

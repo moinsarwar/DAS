@@ -1,13 +1,20 @@
 <div id="sidebar-wrapper">
-    <div class="sidebar-heading">
-        <i class="bi bi-hospital-fill text-success"></i>
-        <span>{{ config('app.name') }}</span>
+    <div class="sidebar-heading text-center py-4">
+        @if(isset($clinicSetting) && $clinicSetting->logo_path)
+            <img src="{{ asset('storage/' . $clinicSetting->logo_path) }}" alt="Logo" class="img-fluid"
+                style="max-height: 150px;">
+        @else
+            <div class="d-flex align-items-center justify-content-center gap-2">
+                <i class="bi bi-hospital-fill text-success fs-4"></i>
+                <span class="fs-5 fw-bold">{{ config('app.name') }}</span>
+            </div>
+        @endif
     </div>
 
     <div class="list-group list-group-flush my-3">
         @auth
             @if(auth()->user()->isAdmin())
-                <small class="text-uppercase text-muted fw-bold px-3 mb-2"
+                <small class="text-uppercase  fw-bold px-3 mb-2"
                     style="font-size: 0.75rem; letter-spacing: 0.05em;">Administration</small>
                 <a href="{{ route('admin.dashboard') }}"
                     class="sidebar-link {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}">
@@ -29,13 +36,17 @@
                     class="sidebar-link {{ request()->routeIs('admin.appointments*') ? 'active' : '' }}">
                     <i class="bi bi-calendar-check"></i> Appointments
                 </a>
+                <a href="{{ route('admin.messages') }}"
+                    class="sidebar-link {{ request()->routeIs('admin.messages*') ? 'active' : '' }}">
+                    <i class="bi bi-envelope"></i> Messages
+                </a>
                 <a href="{{ route('admin.settings') }}"
                     class="sidebar-link {{ request()->routeIs('admin.settings*') ? 'active' : '' }}">
                     <i class="bi bi-gear-fill"></i> Clinic Settings
                 </a>
             @elseif(auth()->user()->isDoctor())
-                <small class="text-uppercase text-muted fw-bold px-3 mb-2"
-                    style="font-size: 0.75rem; letter-spacing: 0.05em;">Doctor Panel</small>
+                <small class="text-uppercase fw-bold px-3 mb-2" style="font-size: 0.75rem; letter-spacing: 0.05em;">Doctor
+                    Panel</small>
                 <a href="{{ route('doctor.dashboard') }}"
                     class="sidebar-link {{ request()->routeIs('doctor.dashboard') ? 'active' : '' }}">
                     <i class="bi bi-speedometer2"></i> Dashboard
@@ -53,8 +64,8 @@
                     <i class="bi bi-person-badge"></i> My Profile
                 </a>
             @elseif(auth()->user()->isPatient())
-                <small class="text-uppercase text-muted fw-bold px-3 mb-2"
-                    style="font-size: 0.75rem; letter-spacing: 0.05em;">Patient Portal</small>
+                <small class="text-uppercase fw-bold px-3 mb-2" style="font-size: 0.75rem; letter-spacing: 0.05em;">Patient
+                    Portal</small>
                 <a href="{{ route('patient.dashboard') }}"
                     class="sidebar-link {{ request()->routeIs('patient.dashboard') ? 'active' : '' }}">
                     <i class="bi bi-house-door"></i> Dashboard
@@ -68,8 +79,8 @@
                     <i class="bi bi-person-circle"></i> My Profile
                 </a>
             @elseif(auth()->user()->isReceptionist())
-                <small class="text-uppercase text-muted fw-bold px-3 mb-2"
-                    style="font-size: 0.75rem; letter-spacing: 0.05em;">Reception Desk</small>
+                <small class="text-uppercase fw-bold px-3 mb-2" style="font-size: 0.75rem; letter-spacing: 0.05em;">Reception
+                    Desk</small>
                 <a href="{{ route('receptionist.dashboard') }}"
                     class="sidebar-link {{ request()->routeIs('receptionist.dashboard') ? 'active' : '' }}">
                     <i class="bi bi-person-workspace"></i> Desk
@@ -83,6 +94,9 @@
             <!-- Guest Links -->
             <a href="{{ route('login') }}" class="sidebar-link">
                 <i class="bi bi-box-arrow-in-right"></i> Login
+            </a>
+            <a href="{{ route('register') }}" class="sidebar-link">
+                <i class="bi bi-person-plus"></i> Register
             </a>
         @endauth
     </div>

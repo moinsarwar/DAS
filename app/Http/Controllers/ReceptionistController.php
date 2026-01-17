@@ -52,7 +52,7 @@ class ReceptionistController extends Controller
             'name' => 'required|string',
             'mobile_number' => 'required|string',
             // Removed unique:users,cnic rule
-            'cnic' => 'required|string',
+            'cnic' => 'required|numeric|digits:13',
         ]);
 
         // Auto-generate MR Number

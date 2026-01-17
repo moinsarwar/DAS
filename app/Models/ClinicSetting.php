@@ -6,5 +6,5 @@ use Illuminate\Database\Eloquent\Model;
 
 class ClinicSetting extends Model
 {
-    protected $fillable = ['phone', 'address', 'logo_path'];
+    protected $fillable = ['phone', 'address', 'logo_path', 'landline', 'contact_email'];
 }

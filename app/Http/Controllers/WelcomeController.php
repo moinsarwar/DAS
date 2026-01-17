@@ -12,6 +12,7 @@ class WelcomeController extends Controller
     {
         $stats = [];
         $user = Auth::user();
+        $doctors = \App\Models\Doctor::with(['user', 'category', 'schedules'])->get();
 
         if ($user) {
             if ($user->role === 'admin') {
@@ -48,6 +49,37 @@ class WelcomeController extends Controller
             }
         }
 
-        return view('welcome', compact('stats'));
+        return view('welcome', compact('stats', 'doctors'));
+    }
+
+    public function doctors()
+    {
+        $doctors = \App\Models\Doctor::with(['user', 'category', 'schedules'])->get();
+        return view('landing.doctors', compact('doctors'));
+    }
+
+    public function about()
+    {
+        return view('landing.about');
+    }
+
+    public function contact()
+    {
+        return view('landing.contact');
+    }
+
+    public function storeContact(\Illuminate\Http\Request $request)
+    {
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|max:255',
+            'phone' => 'nullable|string|max:20',
+            'subject' => 'required|string|max:255',
+            'message' => 'required|string',
+        ]);
+
+        \App\Models\ContactMessage::create($request->all());
+
+        return back()->with('success', 'Thank you for contacting us. We will get back to you shortly.');
     }
 }
