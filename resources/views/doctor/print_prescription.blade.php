@@ -131,6 +131,10 @@
             border: 1px solid #6c757d;
         }
 
+        @page {
+            margin: 0; /* Removes default browser header and footer */
+        }
+
         @media print {
             .no-print {
                 display: none !important;
@@ -145,7 +149,12 @@
                 width: 100%;
                 max-width: 100%;
                 margin: 0;
-                padding: 0;
+                padding: 15mm 15mm 0mm 15mm !important; /* Proper print margins: 25mm top, 15mm sides/bottom */
+                box-sizing: border-box;
+            }
+
+            .content {
+                min-height: 600px !important; /* Prevent forcing a second page */
             }
 
             .header,

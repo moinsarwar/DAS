@@ -170,3 +170,7 @@ Route::middleware('auth')->prefix('notifications')->name('notifications.')->grou
     Route::post('/{id}/read', [\App\Http\Controllers\NotificationController::class, 'markRead'])->name('read');
     Route::post('/read-all', [\App\Http\Controllers\NotificationController::class, 'markAllRead'])->name('readAll');
 });
+
+// AI Chatbot Routes
+Route::post('/ai/chat', [\App\Http\Controllers\AiChatController::class, 'chat'])->name('ai.chat');
+Route::post('/ai/chat/reset', [\App\Http\Controllers\AiChatController::class, 'reset'])->name('ai.chat.reset');

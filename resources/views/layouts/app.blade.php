@@ -256,26 +256,33 @@
                 }
             @endauth
 
-            // Global Confirmation Helper
-            window.confirmAction = function (event, formId, title = 'Are you sure?', text = "You won't be able to revert this!", icon = 'warning') {
-                event.preventDefault();
-                Swal.fire({
-                    title: title,
-                    text: text,
-                    icon: icon,
-                    showCancelButton: true,
-                    confirmButtonColor: '#d33',
-                    cancelButtonColor: '#3085d6',
-                    confirmButtonText: 'Yes, proceed!'
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        document.getElementById(formId).submit();
-                    }
-                });
-            }
         });
+
+        // Global Confirmation Helper
+        window.confirmAction = function (event, formId, title = 'Are you sure?', text = "You won't be able to revert this!", icon = 'warning') {
+            event.preventDefault();
+            Swal.fire({
+                title: title,
+                text: text,
+                icon: icon,
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Yes, proceed!'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    document.getElementById(formId).submit();
+                }
+            });
+        }
     </script>
+
+    @if(!auth()->check() || auth()->user()->isPatient())
+        @include('layouts.ai_bot')
+    @endif
+
     @stack('scripts')
 </body>
+
 
 </html>
