@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AiChatController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\DoctorController;
@@ -172,5 +173,5 @@ Route::middleware('auth')->prefix('notifications')->name('notifications.')->grou
 });
 
 // AI Chatbot Routes
-Route::post('/ai/chat', [\App\Http\Controllers\AiChatController::class, 'chat'])->name('ai.chat');
-Route::post('/ai/chat/reset', [\App\Http\Controllers\AiChatController::class, 'reset'])->name('ai.chat.reset');
+Route::post('/ai/chat', [AiChatController::class, 'chat'])->name('ai.chat');
+Route::post('/ai/chat/reset', [AiChatController::class, 'reset'])->name('ai.chat.reset');
