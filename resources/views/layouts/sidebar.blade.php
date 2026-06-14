@@ -6,7 +6,7 @@
         @else
             <div class="d-flex align-items-center justify-content-center gap-2">
                 <i class="bi bi-hospital-fill text-success fs-4"></i>
-                <span class="fs-5 fw-bold">{{ config('app.name') }}</span>
+                <span class="fs-5 fw-bold">{{ $clinicSetting->clinic_name ?? config('app.name') }}</span>
             </div>
         @endif
     </div>

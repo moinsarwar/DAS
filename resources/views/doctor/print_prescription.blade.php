@@ -176,7 +176,7 @@
                         style="height: 60px; margin-right: 15px;">
                 @endif
                 <div>
-                    <h2>{{ config('app.name') }}</h2>
+                    <h2>{{ $clinicSetting->clinic_name ?? config('app.name') }}</h2>
                     <div style="font-size: 14px;">{{ $settings->address ?? 'Clinic Details' }}</div>
                     <div style="font-size: 14px;">Tel: {{ $settings->phone ?? '' }}</div>
                 </div>
@@ -239,7 +239,7 @@
         </div>
 
         <div class="footer">
-            {{ config('app.name') }} | Generated on {{ date('d M, Y h:i A') }}
+            {{ $clinicSetting->clinic_name ?? config('app.name') }} | Generated on {{ date('d M, Y h:i A') }}
         </div>
     </div>
 

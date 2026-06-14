@@ -39,7 +39,7 @@ class AdminController extends Controller
             'icon' => 'nullable|string|max:255',
             'category_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg,webp|max:2048',
         ]);
-        
+
         $data = $request->only(['name', 'description', 'icon']);
         if ($request->hasFile('category_image')) {
             $path = $request->file('category_image')->store('categories', 'public');
@@ -171,7 +171,7 @@ class AdminController extends Controller
         $doctor = Doctor::findOrFail($id);
         $user = $doctor->user; // Get associated user to delete if needed
         $doctor->delete();
-        // optionally delete the user if they rely solely on being a doctor, 
+        // optionally delete the user if they rely solely on being a doctor,
         // but typically users table is master. If we want to remove access completely:
         if ($user && $user->role === 'doctor') {
             $user->delete();
@@ -470,7 +470,7 @@ class AdminController extends Controller
             'contact_email' => 'nullable|email',
             'address' => 'required|string',
             'logo' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
-            
+
             'clinic_name' => 'nullable|string|max:255',
             'hero_title' => 'nullable|string|max:255',
             'hero_subtitle' => 'nullable|string|max:255',
@@ -487,6 +487,9 @@ class AdminController extends Controller
             'doctors_description' => 'nullable|string',
             'features' => 'nullable|string',
             'faqs' => 'nullable|string',
+            'favicon' => 'nullable|image|mimes:ico,jpeg,png,jpg,gif,svg,webp|max:4096',
+            'ui_theme' => 'nullable|string|max:50',
+            'font_family' => 'nullable|string|max:50',
         ]);
 
         $settings = \App\Models\ClinicSetting::first();
@@ -498,7 +501,7 @@ class AdminController extends Controller
         $settings->landline = $request->landline;
         $settings->contact_email = $request->contact_email;
         $settings->address = $request->address;
-        
+
         $settings->clinic_name = $request->clinic_name;
         $settings->hero_title = $request->hero_title;
         $settings->hero_subtitle = $request->hero_subtitle;
@@ -513,6 +516,8 @@ class AdminController extends Controller
         $settings->social_instagram = $request->social_instagram;
         $settings->doctors_title = $request->doctors_title;
         $settings->doctors_description = $request->doctors_description;
+        $settings->ui_theme = $request->ui_theme ?? 'default';
+        $settings->font_family = $request->font_family ?? 'Inter';
 
         if ($request->filled('features')) {
             $settings->features = json_decode($request->features, true);
@@ -533,6 +538,15 @@ class AdminController extends Controller
             }
             $path = $request->file('logo')->store('uploads', 'public');
             $settings->logo_path = $path;
+        }
+
+        if ($request->hasFile('favicon')) {
+            // Delete old favicon if exists
+            if ($settings->favicon_path && \Illuminate\Support\Facades\Storage::exists('public/' . $settings->favicon_path)) {
+                \Illuminate\Support\Facades\Storage::delete('public/' . $settings->favicon_path);
+            }
+            $faviconPath = $request->file('favicon')->store('uploads', 'public');
+            $settings->favicon_path = $faviconPath;
         }
 
         $settings->save();

@@ -47,6 +47,16 @@
                                 </button>
                             </li>
                             <li class="nav-item" role="presentation">
+                                <button class="nav-link fw-bold text-secondary" id="theme-tab" data-bs-toggle="tab" data-bs-target="#theme" type="button" role="tab" aria-controls="theme" aria-selected="false">
+                                    <i class="bi bi-palette me-1"></i> Theme Layout
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link fw-bold text-secondary" id="typography-tab" data-bs-toggle="tab" data-bs-target="#typography" type="button" role="tab" aria-controls="typography" aria-selected="false">
+                                    <i class="bi bi-fonts me-1"></i> Typography
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
                                 <button class="nav-link fw-bold text-secondary" id="faqs-tab" data-bs-toggle="tab" data-bs-target="#faqs" type="button" role="tab" aria-controls="faqs" aria-selected="false">
                                     <i class="bi bi-question-circle me-1"></i> FAQs Editor
                                 </button>
@@ -76,6 +86,24 @@
                                     </div>
                                 </div>
 
+                                <div class="row align-items-center mb-4 pb-3 border-bottom">
+                                    <div class="col-md-3 text-center mb-3 mb-md-0">
+                                        <label class="form-label d-block fw-bold mb-2">Favicon</label>
+                                        @if($settings && $settings->favicon_path)
+                                            <img src="{{ asset('storage/' . $settings->favicon_path) }}" alt="Favicon" class="img-fluid rounded border p-2 shadow-sm" style="max-height: 50px;">
+                                        @else
+                                            <div class="bg-light border rounded p-2 text-muted fst-italic shadow-sm">
+                                                <i class="bi bi-globe fs-3 d-block mb-1 text-secondary"></i> No Favicon
+                                            </div>
+                                        @endif
+                                    </div>
+                                    <div class="col-md-9">
+                                        <label class="form-label fw-semibold">Upload New Favicon</label>
+                                        <input type="file" name="favicon" class="form-control mb-2" accept=".ico,image/png,image/jpeg,image/svg+xml">
+                                        <div class="form-text small">Recommended: 32x32px or 64x64px (ICO/PNG format).</div>
+                                    </div>
+                                </div>
+
                                 <div class="mb-3">
                                     <label class="form-label fw-semibold">Clinic Display Name</label>
                                     <input type="text" name="clinic_name" class="form-control" value="{{ old('clinic_name', $settings->clinic_name ?? 'Multan Cancer Clinic') }}" placeholder="e.g. Multan Cancer Clinic">
@@ -91,6 +119,248 @@
                                 <div class="mb-3">
                                     <label class="form-label fw-semibold">Doctors Page Description Subtitle</label>
                                     <textarea name="doctors_description" class="form-control" rows="2" placeholder="Highly qualified and experienced consultants dedicated to your care.">{{ old('doctors_description', $settings->doctors_description ?? '') }}</textarea>
+                                </div>
+                            </div>
+
+                            {{-- Tab: Theme Layout --}}
+                            <div class="tab-pane fade" id="theme" role="tabpanel" aria-labelledby="theme-tab">
+                                <div class="mb-4">
+                                    <h5 class="fw-bold text-primary mb-3"><i class="bi bi-palette me-2"></i>Appearance & Theme</h5>
+                                    <p class="text-muted small mb-4">Customize the structural layout and core color palette of your public pages.</p>
+                                    <label class="form-label fw-semibold mb-3">UI Theme Layout</label>
+                                    
+                                    <style>
+                                        .theme-selector {
+                                            display: grid;
+                                            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+                                            gap: 1.5rem;
+                                        }
+                                        .theme-card-input {
+                                            display: none;
+                                        }
+                                        .theme-card {
+                                            border: 2px solid #e2e8f0;
+                                            border-radius: 0.75rem;
+                                            padding: 1rem;
+                                            cursor: pointer;
+                                            transition: all 0.2s ease;
+                                            position: relative;
+                                            background: white;
+                                        }
+                                        .theme-card:hover {
+                                            border-color: #cbd5e1;
+                                            transform: translateY(-2px);
+                                        }
+                                        .theme-card-input:checked + .theme-card {
+                                            border-color: #0d6efd;
+                                            background-color: #f8fbff;
+                                            box-shadow: 0 4px 6px -1px rgba(13, 110, 253, 0.1);
+                                        }
+                                        .theme-card-input:checked + .theme-card::after {
+                                            content: '\F26A';
+                                            font-family: 'bootstrap-icons';
+                                            position: absolute;
+                                            top: -10px;
+                                            right: -10px;
+                                            background: #0d6efd;
+                                            color: white;
+                                            border-radius: 50%;
+                                            width: 24px;
+                                            height: 24px;
+                                            display: flex;
+                                            align-items: center;
+                                            justify-content: center;
+                                            font-size: 14px;
+                                        }
+                                        .theme-preview {
+                                            height: 100px;
+                                            border-radius: 0.5rem;
+                                            margin-bottom: 1rem;
+                                            border: 1px solid rgba(0,0,0,0.05);
+                                            display: flex;
+                                            flex-direction: column;
+                                            overflow: hidden;
+                                        }
+                                        .theme-header { height: 20%; width: 100%; }
+                                        .theme-body { height: 80%; width: 100%; display: flex; gap: 4px; padding: 4px; }
+                                        .theme-sidebar { width: 30%; height: 100%; border-radius: 2px; }
+                                        .theme-main { width: 70%; height: 100%; border-radius: 2px; }
+                                    </style>
+
+                                    <div class="theme-selector">
+                                        <!-- Classic Blue (Default) -->
+                                        <label>
+                                            <input type="radio" name="ui_theme" value="default" class="theme-card-input" {{ ($settings->ui_theme ?? 'default') == 'default' ? 'checked' : '' }}>
+                                            <div class="theme-card">
+                                                <div class="theme-preview" style="background: #f8fbff;">
+                                                    <div class="theme-header" style="background: white; border-bottom: 1px solid #e2e8f0;"></div>
+                                                    <div class="theme-body" style="flex-direction: column;">
+                                                        <div style="background: #0d6efd; height: 30%; border-radius: 2px;"></div>
+                                                        <div style="background: white; height: 70%; border-radius: 2px;"></div>
+                                                    </div>
+                                                </div>
+                                                <h6 class="fw-bold mb-1">Classic Blue</h6>
+                                                <small class="text-muted d-block">Default Professional</small>
+                                            </div>
+                                        </label>
+
+                                        <!-- Midnight Tech -->
+                                        <label>
+                                            <input type="radio" name="ui_theme" value="modern_dark" class="theme-card-input" {{ ($settings->ui_theme ?? '') == 'modern_dark' ? 'checked' : '' }}>
+                                            <div class="theme-card">
+                                                <div class="theme-preview" style="background: #0f172a;">
+                                                    <div class="theme-body">
+                                                        <div class="theme-sidebar" style="background: #1e293b; border-right: 1px solid #334155;"></div>
+                                                        <div class="theme-main" style="background: transparent; display: flex; flex-direction: column; gap: 4px;">
+                                                            <div style="background: rgba(59, 130, 246, 0.2); height: 40%; border-radius: 2px;"></div>
+                                                            <div style="background: #1e293b; height: 60%; border-radius: 2px;"></div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <h6 class="fw-bold mb-1">Midnight Tech</h6>
+                                                <small class="text-muted d-block">Modern Dark Sidebar</small>
+                                            </div>
+                                        </label>
+
+                                        <!-- Eco Green -->
+                                        <label>
+                                            <input type="radio" name="ui_theme" value="nature_green" class="theme-card-input" {{ ($settings->ui_theme ?? '') == 'nature_green' ? 'checked' : '' }}>
+                                            <div class="theme-card">
+                                                <div class="theme-preview" style="background: #f0fdf4;">
+                                                    <div class="theme-header" style="background: white; border-bottom: 2px solid #10b981; display: flex; justify-content: center; align-items: center;">
+                                                        <div style="width: 40%; height: 40%; background: #d1fae5; border-radius: 10px;"></div>
+                                                    </div>
+                                                    <div class="theme-body" style="justify-content: center; align-items: center; padding: 10px;">
+                                                        <div style="background: white; width: 80%; height: 80%; border-radius: 10px; border: 1px solid #d1fae5;"></div>
+                                                    </div>
+                                                </div>
+                                                <h6 class="fw-bold mb-1">Eco Green</h6>
+                                                <small class="text-muted d-block">Centered Organic</small>
+                                            </div>
+                                        </label>
+
+                                        <!-- Deep Ocean -->
+                                        <label>
+                                            <input type="radio" name="ui_theme" value="ocean_blue" class="theme-card-input" {{ ($settings->ui_theme ?? '') == 'ocean_blue' ? 'checked' : '' }}>
+                                            <div class="theme-card">
+                                                <div class="theme-preview" style="background: #f8fafc;">
+                                                    <div class="theme-header" style="background: #0f172a; height: 15%;"></div>
+                                                    <div class="theme-header" style="background: white; height: 25%; border-bottom: 1px solid #e2e8f0;"></div>
+                                                    <div class="theme-body" style="padding: 0;">
+                                                        <div style="background: #0284c7; width: 100%; height: 50%;"></div>
+                                                    </div>
+                                                </div>
+                                                <h6 class="fw-bold mb-1">Deep Ocean</h6>
+                                                <small class="text-muted d-block">Wide Clinical Blocks</small>
+                                            </div>
+                                        </label>
+
+                                        <!-- Sunset Orange -->
+                                        <label>
+                                            <input type="radio" name="ui_theme" value="sunset_orange" class="theme-card-input" {{ ($settings->ui_theme ?? '') == 'sunset_orange' ? 'checked' : '' }}>
+                                            <div class="theme-card">
+                                                <div class="theme-preview" style="background: #fff7ed;">
+                                                    <div class="theme-header" style="background: white;"></div>
+                                                    <div class="theme-body" style="padding: 0;">
+                                                        <div style="background: linear-gradient(135deg, #f97316 0%, #ea580c 100%); width: 100%; height: 100%; border-radius: 0 0 50% 50% / 20px;"></div>
+                                                    </div>
+                                                </div>
+                                                <h6 class="fw-bold mb-1">Sunset Orange</h6>
+                                                <small class="text-muted d-block">Warm Vibrant Curves</small>
+                                            </div>
+                                        </label>
+
+                                        <!-- Royal Purple -->
+                                        <label>
+                                            <input type="radio" name="ui_theme" value="royal_purple" class="theme-card-input" {{ ($settings->ui_theme ?? '') == 'royal_purple' ? 'checked' : '' }}>
+                                            <div class="theme-card">
+                                                <div class="theme-preview" style="background: #faf5ff;">
+                                                    <div class="theme-header" style="background: #581c87; height: 30%;"></div>
+                                                    <div class="theme-body" style="justify-content: center; padding-top: 10px;">
+                                                        <div style="background: white; width: 80%; height: 90%; border: 2px solid #e9d5ff;"></div>
+                                                    </div>
+                                                </div>
+                                                <h6 class="fw-bold mb-1">Royal Purple</h6>
+                                                <small class="text-muted d-block">Elegant Premium</small>
+                                            </div>
+                                        </label>
+
+                                        <!-- Clean Minimal -->
+                                        <label>
+                                            <input type="radio" name="ui_theme" value="clean_minimal" class="theme-card-input" {{ ($settings->ui_theme ?? '') == 'clean_minimal' ? 'checked' : '' }}>
+                                            <div class="theme-card">
+                                                <div class="theme-preview" style="background: #ffffff; border: 1px solid #f1f5f9;">
+                                                    <div class="theme-header" style="background: transparent; border-bottom: 1px solid #f8fafc;"></div>
+                                                    <div class="theme-body" style="padding: 10px; display: flex; gap: 10px;">
+                                                        <div style="background: #f8fafc; width: 50%; height: 100%;"></div>
+                                                        <div style="background: #f8fafc; width: 50%; height: 100%;"></div>
+                                                    </div>
+                                                </div>
+                                                <h6 class="fw-bold mb-1">Clean Minimal</h6>
+                                                <small class="text-muted d-block">Ultra Modern White</small>
+                                            </div>
+                                        </label>
+
+                                        <!-- Luxury Gold -->
+                                        <label>
+                                            <input type="radio" name="ui_theme" value="luxury_gold" class="theme-card-input" {{ ($settings->ui_theme ?? '') == 'luxury_gold' ? 'checked' : '' }}>
+                                            <div class="theme-card">
+                                                <div class="theme-preview" style="background: #171717;">
+                                                    <div class="theme-header" style="background: #262626; border-bottom: 1px solid #d4af37;"></div>
+                                                    <div class="theme-body" style="padding: 15px;">
+                                                        <div style="background: transparent; border: 1px solid #d4af37; width: 100%; height: 100%;"></div>
+                                                    </div>
+                                                </div>
+                                                <h6 class="fw-bold mb-1">Luxury Gold</h6>
+                                                <small class="text-muted d-block">Exclusive Dark Gold</small>
+                                            </div>
+                                        </label>
+
+                                        <!-- Soft Rose -->
+                                        <label>
+                                            <input type="radio" name="ui_theme" value="soft_rose" class="theme-card-input" {{ ($settings->ui_theme ?? '') == 'soft_rose' ? 'checked' : '' }}>
+                                            <div class="theme-card">
+                                                <div class="theme-preview" style="background: #fff1f2;">
+                                                    <div class="theme-header" style="background: white; border-radius: 0 0 10px 10px;"></div>
+                                                    <div class="theme-body" style="justify-content: space-around; align-items: center;">
+                                                        <div style="background: #fda4af; width: 25%; height: 50%; border-radius: 5px;"></div>
+                                                        <div style="background: #fda4af; width: 25%; height: 50%; border-radius: 5px;"></div>
+                                                        <div style="background: #fda4af; width: 25%; height: 50%; border-radius: 5px;"></div>
+                                                    </div>
+                                                </div>
+                                                <h6 class="fw-bold mb-1">Soft Rose</h6>
+                                                <small class="text-muted d-block">Gentle Pastel Layout</small>
+                                            </div>
+                                        </label>
+                                    </div>
+                                    <div class="form-text mt-3">Select the structural layout and color palette for your public pages. This completely changes the website's appearance.</div>
+                                </div>
+                            </div>
+
+                            {{-- Tab: Typography --}}
+                            <div class="tab-pane fade" id="typography" role="tabpanel" aria-labelledby="typography-tab">
+                                <div class="mb-4">
+                                    <h5 class="fw-bold text-primary mb-3"><i class="bi bi-fonts me-2"></i>Typography</h5>
+                                    <p class="text-muted small mb-4">Select the primary font family used across the public website.</p>
+                                    
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <label class="form-label fw-semibold">Global Font Style</label>
+                                            <select name="font_family" class="form-select">
+                                                <option value="Inter" {{ ($settings->font_family ?? 'Inter') == 'Inter' ? 'selected' : '' }}>Inter (Clean, Modern, Default)</option>
+                                                <option value="Roboto" {{ ($settings->font_family ?? '') == 'Roboto' ? 'selected' : '' }}>Roboto (Geometric, Professional)</option>
+                                                <option value="Poppins" {{ ($settings->font_family ?? '') == 'Poppins' ? 'selected' : '' }}>Poppins (Rounded, Friendly)</option>
+                                                <option value="'Playfair Display'" {{ ($settings->font_family ?? '') == "'Playfair Display'" ? 'selected' : '' }}>Playfair Display (Serif, Elegant, Luxury)</option>
+                                                <option value="Montserrat" {{ ($settings->font_family ?? '') == 'Montserrat' ? 'selected' : '' }}>Montserrat (Wide, Contemporary)</option>
+                                                <option value="Lora" {{ ($settings->font_family ?? '') == 'Lora' ? 'selected' : '' }}>Lora (Serif, Classic, Readable)</option>
+                                                <option value="Nunito" {{ ($settings->font_family ?? '') == 'Nunito' ? 'selected' : '' }}>Nunito (Soft, Welcoming)</option>
+                                                <option value="Raleway" {{ ($settings->font_family ?? '') == 'Raleway' ? 'selected' : '' }}>Raleway (Thin, Elegant)</option>
+                                                <option value="Merriweather" {{ ($settings->font_family ?? '') == 'Merriweather' ? 'selected' : '' }}>Merriweather (Serif, Traditional)</option>
+                                                <option value="Ubuntu" {{ ($settings->font_family ?? '') == 'Ubuntu' ? 'selected' : '' }}>Ubuntu (Tech, Modern)</option>
+                                            </select>
+                                            <div class="form-text">This will automatically import the required fonts from Google Fonts and apply them to the site.</div>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
 

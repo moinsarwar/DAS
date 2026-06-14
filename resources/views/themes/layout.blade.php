@@ -10,18 +10,11 @@
         <link rel="icon" href="{{ asset('storage/' . $clinicSetting->favicon_path) }}">
     @endif
 
+    <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    @php
-        $fontFamily = $clinicSetting->font_family ?? 'Inter';
-        $fontImport = match($fontFamily) {
-            'Roboto' => 'https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700;900&display=swap',
-            'Poppins' => 'https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap',
-            "'Playfair Display'" => 'https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&display=swap',
-            default => 'https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap'
-        };
-    @endphp
-    <link href="{{ $fontImport }}" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
 
     <!-- Bootstrap CDN -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -34,8 +27,7 @@
 
     <style>
         body {
-            --theme-font: {!! $fontFamily !!}, sans-serif;
-            font-family: var(--theme-font);
+            font-family: 'Inter', sans-serif;
             background-color: var(--theme-bg, #f8fbff);
             color: var(--theme-text, #212529);
         }

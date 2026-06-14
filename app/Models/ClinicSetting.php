@@ -27,7 +27,10 @@ class ClinicSetting extends Model
         'social_twitter',
         'social_instagram',
         'doctors_title',
-        'doctors_description'
+        'doctors_description',
+        'favicon_path',
+        'ui_theme',
+        'font_family'
     ];
 
     protected $casts = [

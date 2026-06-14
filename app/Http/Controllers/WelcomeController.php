@@ -8,6 +8,23 @@ use Illuminate\Support\Facades\Auth;
 
 class WelcomeController extends Controller
 {
+    private function resolveView($viewName)
+    {
+        $settings = \App\Models\ClinicSetting::first();
+        $theme = $settings->ui_theme ?? 'default';
+
+        if ($theme !== 'default') {
+            $themeView = "themes.{$theme}.{$viewName}";
+            if (view()->exists($themeView)) {
+                return $themeView;
+            }
+        }
+        
+        // Fallback to default structure
+        if ($viewName === 'welcome') return 'welcome';
+        return "landing.{$viewName}";
+    }
+
     public function index()
     {
         $stats = [];
@@ -49,7 +66,7 @@ class WelcomeController extends Controller
             }
         }
 
-        return view('welcome', compact('stats', 'doctors'));
+        return view($this->resolveView('welcome'), compact('stats', 'doctors'));
     }
 
     public function doctors()
@@ -57,17 +74,17 @@ class WelcomeController extends Controller
         $categories = \App\Models\Category::with(['doctors.user', 'doctors.schedules'])
             ->has('doctors')
             ->get();
-        return view('landing.doctors', compact('categories'));
+        return view($this->resolveView('doctors'), compact('categories'));
     }
 
     public function about()
     {
-        return view('landing.about');
+        return view($this->resolveView('about'));
     }
 
     public function contact()
     {
-        return view('landing.contact');
+        return view($this->resolveView('contact'));
     }
 
     public function storeContact(\Illuminate\Http\Request $request)
@@ -88,6 +105,6 @@ class WelcomeController extends Controller
     public function showPage($slug)
     {
         $page = \App\Models\Page::where('slug', $slug)->where('is_active', true)->firstOrFail();
-        return view('landing.page', compact('page'));
+        return view($this->resolveView('page'), compact('page'));
     }
 }

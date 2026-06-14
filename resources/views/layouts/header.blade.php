@@ -3,13 +3,14 @@
         <button class="header-toggle-btn" id="sidebarToggle">
             <i class="bi bi-list"></i>
         </button>
-        <h5 class="mb-0 fw-bold text-heading d-none d-md-block">
-            @if(auth()->check())
-                {{ config('app.name') }} | @yield('title', 'Dashboard')
-            @else
-                {{ config('app.name') }} | Welcome
-            @endif
-        </h5>
+        <div class="mb-0">
+            <h5 class="mb-0 text-dark fw-bold d-none d-md-block">
+                {{ $clinicSetting->clinic_name ?? config('app.name') }} | @yield('title', 'Dashboard')
+            </h5>
+            <h5 class="mb-0 text-dark fw-bold d-block d-md-none">
+                {{ $clinicSetting->clinic_name ?? config('app.name') }} | Welcome
+            </h5>
+        </div>
     </div>
 
     <div class="d-flex align-items-center gap-3">

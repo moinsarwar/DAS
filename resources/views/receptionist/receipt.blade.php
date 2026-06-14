@@ -17,7 +17,7 @@
                     @else
                         <i class="bi bi-hospital-fill text-dark fs-1"></i>
                     @endif
-                    <h5 class="fw-bold text-uppercase mb-1" style="font-size: 1rem;">{{ config('app.name') }}</h5>
+                    <h5 class="fw-bold text-uppercase mb-1" style="font-size: 1rem;">{{ $clinicSetting->clinic_name ?? config('app.name') }}</h5>
                     <p class="small mb-0" style="font-size: 0.75rem;">{{ $settings->address ?? 'Multan' }}</p>
                     <p class="small mb-0" style="font-size: 0.75rem;">Tel: {{ $settings->phone ?? '0300-1234567' }}</p>
                 </div>

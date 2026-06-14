@@ -4,7 +4,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ config('app.name') }} | @yield('title', 'Portal')</title>
+    <title>{{ $clinicSetting->clinic_name ?? config('app.name') }} | @yield('title', 'Portal')</title>
+    
+    @if(isset($clinicSetting) && $clinicSetting->favicon_path)
+        <link rel="icon" href="{{ asset('storage/' . $clinicSetting->favicon_path) }}">
+    @endif
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -77,7 +81,7 @@
             <footer class="mt-auto">
                 <div class="container-fluid px-4">
                     <div class="d-flex align-items-center justify-content-between small">
-                        <div class="text-muted">Copyright &copy; {{ config('app.name') }} {{ date('Y') }}</div>
+                        <div class="text-muted">Copyright &copy; {{ $clinicSetting->clinic_name ?? config('app.name') }} {{ date('Y') }}</div>
                         <div>
                             <a href="#">Privacy Policy</a>
                             &middot;
