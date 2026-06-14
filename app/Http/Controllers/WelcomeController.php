@@ -54,8 +54,10 @@ class WelcomeController extends Controller
 
     public function doctors()
     {
-        $doctors = \App\Models\Doctor::with(['user', 'category', 'schedules'])->get();
-        return view('landing.doctors', compact('doctors'));
+        $categories = \App\Models\Category::with(['doctors.user', 'doctors.schedules'])
+            ->has('doctors')
+            ->get();
+        return view('landing.doctors', compact('categories'));
     }
 
     public function about()
@@ -81,5 +83,11 @@ class WelcomeController extends Controller
         \App\Models\ContactMessage::create($request->all());
 
         return back()->with('success', 'Thank you for contacting us. We will get back to you shortly.');
+    }
+
+    public function showPage($slug)
+    {
+        $page = \App\Models\Page::where('slug', $slug)->where('is_active', true)->firstOrFail();
+        return view('landing.page', compact('page'));
     }
 }

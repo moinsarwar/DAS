@@ -44,6 +44,10 @@
                     class="sidebar-link {{ request()->routeIs('admin.settings*') ? 'active' : '' }}">
                     <i class="bi bi-gear-fill"></i> Clinic Settings
                 </a>
+                <a href="{{ route('admin.pages.index') }}"
+                    class="sidebar-link {{ request()->routeIs('admin.pages*') ? 'active' : '' }}">
+                    <i class="bi bi-file-earmark-richtext-fill"></i> Manage Pages
+                </a>
             @elseif(auth()->user()->isDoctor())
                 <small class="text-uppercase fw-bold px-3 mb-2" style="font-size: 0.75rem; letter-spacing: 0.05em;">Doctor
                     Panel</small>

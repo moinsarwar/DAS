@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Multan Cancer Clinic | @yield('title', 'Welcome')</title>
+    <title>{{ $clinicSetting->clinic_name ?? 'Multan Cancer Clinic' }} | @yield('title', 'Welcome')</title>
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -77,12 +77,13 @@
             <a class="navbar-brand text-dark d-flex align-items-center gap-2" href="{{ url('/') }}">
                 @if(isset($clinicSetting) && $clinicSetting->logo_path)
                     <img src="{{ asset('storage/' . $clinicSetting->logo_path) }}" alt="Logo"
-                        style="height: 100px; width: auto;">
+                        style="height: 50px; width: auto; max-width: 150px; object-fit: contain;">
                 @else
                     <div class="bg-primary bg-opacity-10 text-primary rounded-circle d-flex align-items-center justify-content-center p-2"
                         style="width: 40px; height: 40px;">
                         <i class="bi bi-hospital-fill fs-5"></i>
                     </div>
+                    <span class="fw-bold text-dark fs-5">{{ $clinicSetting->clinic_name ?? 'Multan Cancer Clinic' }}</span>
                 @endif
             </a>
             <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse"
@@ -106,6 +107,12 @@
                         <a class="nav-link {{ request()->routeIs('public.contact') ? 'active' : '' }}"
                             href="{{ route('public.contact') }}">Contact</a>
                     </li>
+                    @foreach($navPages as $p)
+                        <li class="nav-item">
+                            <a class="nav-link {{ request()->is('page/' . $p->slug) ? 'active' : '' }}"
+                                href="{{ url('page/' . $p->slug) }}">{{ $p->title }}</a>
+                        </li>
+                    @endforeach
                     <li class="nav-item ms-md-3 mt-3 mt-md-0">
                         @auth
                             <a href="{{ auth()->user()->isAdmin() ? route('admin.dashboard') : (auth()->user()->isDoctor() ? route('doctor.dashboard') : (auth()->user()->isReceptionist() ? route('receptionist.dashboard') : route('patient.dashboard'))) }}"
@@ -139,23 +146,28 @@
                     <div class="d-flex align-items-center gap-2 mb-3">
                         @if(isset($clinicSetting) && $clinicSetting->logo_path)
                             <img src="{{ asset('storage/' . $clinicSetting->logo_path) }}" alt="Logo"
-                                style="height: 80px; width: auto;">
+                                style="height: 50px; width: auto; max-width: 150px; object-fit: contain;">
                         @else
                             <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center"
                                 style="width: 32px; height: 32px;">
                                 <i class="bi bi-hospital-fill text-white small"></i>
                             </div>
                         @endif
-                        <h5 class="fw-bold mb-0 text-dark">Multan Cancer Clinic</h5>
+                        <h5 class="fw-bold mb-0 text-dark">{{ $clinicSetting->clinic_name ?? 'Multan Cancer Clinic' }}</h5>
                     </div>
                     <p class="text-muted small mb-4">
-                        Specialized oncology care providing expert consultations and compassion. Connecting patients
-                        with top oncologists in Multan.
+                        {{ $clinicSetting->about_short ?? 'Specialized oncology care providing expert consultations and compassion. Connecting patients with top oncologists in Multan.' }}
                     </p>
                     <div class="d-flex gap-3">
-                        <a href="#" class="text-secondary hover-primary"><i class="bi bi-facebook fs-5"></i></a>
-                        <a href="#" class="text-secondary hover-primary"><i class="bi bi-twitter fs-5"></i></a>
-                        <a href="#" class="text-secondary hover-primary"><i class="bi bi-instagram fs-5"></i></a>
+                        @if($clinicSetting->social_facebook)
+                            <a href="{{ $clinicSetting->social_facebook }}" target="_blank" class="text-secondary hover-primary"><i class="bi bi-facebook fs-5"></i></a>
+                        @endif
+                        @if($clinicSetting->social_twitter)
+                            <a href="{{ $clinicSetting->social_twitter }}" target="_blank" class="text-secondary hover-primary"><i class="bi bi-twitter-x fs-5"></i></a>
+                        @endif
+                        @if($clinicSetting->social_instagram)
+                            <a href="{{ $clinicSetting->social_instagram }}" target="_blank" class="text-secondary hover-primary"><i class="bi bi-instagram fs-5"></i></a>
+                        @endif
                     </div>
                 </div>
                 <div class="col-lg-2 col-6">
@@ -168,14 +180,17 @@
                                 class="text-muted text-decoration-none hover-primary">About Us</a></li>
                         <li><a href="{{ route('public.contact') }}"
                                 class="text-muted text-decoration-none hover-primary">Contact</a></li>
+                        @foreach($footerPages as $p)
+                            <li><a href="{{ url('page/' . $p->slug) }}" class="text-muted text-decoration-none hover-primary">{{ $p->title }}</a></li>
+                        @endforeach
                     </ul>
                 </div>
                 <div class="col-lg-3 col-6">
                     <h6 class="fw-bold mb-3 text-dark">Clinic Hours</h6>
                     <ul class="list-unstyled d-flex flex-column gap-2 small">
                         <li class="d-flex justify-content-between text-muted">
-                            <span>Monday - Saturday:</span>
-                            <span class="fw-medium text-dark">02:00 PM - 08:00 PM</span>
+                            <span>{{ $clinicSetting->clinic_days ?? 'Monday - Saturday' }}:</span>
+                            <span class="fw-medium text-dark">{{ $clinicSetting->clinic_hours ?? '02:00 PM - 08:00 PM' }}</span>
                         </li>
                         <li class="d-flex justify-content-between text-muted">
                             <span>Sunday:</span>
@@ -211,7 +226,7 @@
                 </div>
             </div>
             <div class="border-top mt-5 pt-4 text-center text-muted small">
-                <p class="mb-0">&copy; {{ date('Y') }} Multan Cancer Clinic. All Rights Reserved.</p>
+                <p class="mb-0">&copy; {{ date('Y') }} {{ $clinicSetting->clinic_name ?? 'Multan Cancer Clinic' }}. All Rights Reserved.</p>
             </div>
         </div>
     </footer>

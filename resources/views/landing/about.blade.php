@@ -5,7 +5,7 @@
 @section('content')
     <div class="bg-primary text-white py-5">
         <div class="container text-center">
-            <h1 class="display-4 fw-bold mb-3">About Multan Cancer Clinic</h1>
+            <h1 class="display-4 fw-bold mb-3">About {{ $clinicSetting->clinic_name ?? 'Multan Cancer Clinic' }}</h1>
             <p class="lead mb-0 text-white-50">Dedicated to providing world-class oncology care with compassion and
                 expertise.</p>
         </div>
@@ -20,7 +20,7 @@
                     believe in early detection, advanced treatment, and holistic support for every patient.
                 </p>
                 <p class="text-muted">
-                    Multan Cancer Clinic was established to bridge the gap in specialized oncology services in the region.
+                    {{ $clinicSetting->clinic_name ?? 'Multan Cancer Clinic' }} was established to bridge the gap in specialized oncology services in the region.
                     We provide a comfortable, professional environment where patients can consult with top experts without
                     the hassle of long waiting times.
                 </p>

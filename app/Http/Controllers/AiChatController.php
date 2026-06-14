@@ -257,7 +257,8 @@ class AiChatController extends Controller
             $userContext = "Authenticated Patient (" . Auth::user()->name . ", MR Number: " . Auth::user()->mr_number . ", ID: " . Auth::id() . ")";
         }
 
-        $clinicName = config('app.name', 'Multan Cancer Clinic');
+        $settings = \App\Models\ClinicSetting::first();
+        $clinicName = $settings->clinic_name ?? config('app.name', 'Multan Cancer Clinic');
 
         return "You are Cura, the smart AI Medical Assistant for {$clinicName}.
 Your goal is to help visitors find medical specialties, search doctors, check schedule slots, and book appointments.

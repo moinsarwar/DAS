@@ -34,8 +34,20 @@ class AppServiceProvider extends ServiceProvider
                 ]);
                 View::share('clinicSetting', $clinicSetting);
             }
+
+            // Share dynamic pages globally
+            if (\Schema::hasTable('pages')) {
+                $navPages = \App\Models\Page::where('is_active', true)->where('show_in_navbar', true)->orderBy('title')->get();
+                $footerPages = \App\Models\Page::where('is_active', true)->where('show_in_footer', true)->orderBy('title')->get();
+                View::share('navPages', $navPages);
+                View::share('footerPages', $footerPages);
+            } else {
+                View::share('navPages', collect());
+                View::share('footerPages', collect());
+            }
         } catch (\Exception $e) {
-            // Fails silently if DB connection issue or other problem, to not break app boot
+            View::share('navPages', collect());
+            View::share('footerPages', collect());
         }
     }
 }

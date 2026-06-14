@@ -8,28 +8,29 @@
         <div class="row align-items-center hero-section">
             <div class="col-lg-6 mb-5 mb-lg-0">
                 <span class="hero-badge mb-3">
-                    <i class="bi bi-shield-check me-2"></i> Excellence in Oncology
+                    <i class="bi bi-shield-check me-2"></i> {{ $clinicSetting->hero_badge ?? 'Excellence in Oncology' }}
                 </span>
                 <h1 class="display-3 fw-bold mb-4 text-dark">
-                    Multan Cancer <br>
+                    {{ $clinicSetting->hero_title ?? 'Multan Cancer' }} <br>
                     <span class="text-primary position-relative">
-                        Clinic
+                        {{ $clinicSetting->hero_subtitle ?? 'Clinic' }}
                         <svg class="underline-decoration" fill="currentColor" viewBox="0 0 100 20" preserveAspectRatio="none">
                             <path d="M0 10 Q 50 20 100 10 T 200 10" />
                         </svg>
                     </span>
                 </h1>
                 <p class="lead text-muted mb-4" style="max-width: 540px;">
-                    Specialized consultant-based oncology services. We connect patients with leading oncologists through a streamlined appointment system.
+                    {{ $clinicSetting->hero_description ?? 'Specialized consultant-based oncology services. We connect patients with leading oncologists through a streamlined appointment system.' }}
                 </p>
 
+                @if($clinicSetting->notice_text)
                 <div class="d-flex align-items-start gap-2 mb-5">
                      <i class="bi bi-info-circle-fill text-warning mt-1"></i>
                      <p class="text-muted small mb-0" style="max-width: 500px;">
-                        <strong>Please Note:</strong> We provide scheduled consultant services only. <br>
-                        <span class="text-danger">24-hour emergency services are NOT available.</span>
+                        {!! nl2br(e($clinicSetting->notice_text)) !!}
                      </p>
                 </div>
+                @endif
 
                 <div class="d-flex gap-3">
                     @auth
@@ -49,12 +50,16 @@
 
                 <div class="mt-5 pt-4 border-top">
                     <div class="d-flex align-items-center flex-wrap gap-4 text-muted small fw-medium">
+                        @if($clinicSetting->clinic_hours)
                         <div class="d-flex align-items-center gap-2">
-                            <i class="bi bi-clock text-primary"></i> 02:00 PM - 08:00 PM
+                            <i class="bi bi-clock text-primary"></i> {{ $clinicSetting->clinic_hours }}
                         </div>
+                        @endif
+                        @if($clinicSetting->clinic_days)
                         <div class="d-flex align-items-center gap-2">
-                            <i class="bi bi-calendar-event text-primary"></i> Mon - Sat
+                            <i class="bi bi-calendar-event text-primary"></i> {{ $clinicSetting->clinic_days }}
                         </div>
+                        @endif
                     </div>
                 </div>
             </div>
@@ -77,30 +82,33 @@
                             </div>
                         </div>
                         <div class="card-body p-4">
-                             <div class="d-flex align-items-start gap-3 mb-4">
-                                <i class="bi bi-check-circle-fill text-success fs-5 flex-shrink-0"></i>
-                                <div>
-                                    <h6 class="fw-bold mb-1">Oncologist Consultants</h6>
-                                    <p class="text-muted small mb-0">Specialized doctors available for detailed consultations and treatment planning.</p>
+                            @php
+                                $features = $clinicSetting->features;
+                                if (is_string($features)) {
+                                    $features = json_decode($features, true);
+                                }
+                                if (!is_array($features) || empty($features)) {
+                                    $features = [
+                                        ['icon' => 'bi-hospital', 'title' => 'Oncologist Consultants', 'description' => 'Specialized doctors available for detailed consultations and treatment planning.'],
+                                        ['icon' => 'bi-clock', 'title' => 'Scheduled Slots', 'description' => 'No waiting in long queues. Book your specific time slot with your preferred doctor.'],
+                                        ['icon' => 'bi-shield-check', 'title' => 'Digital Records', 'description' => 'Your medical history and prescriptions are securely stored and easily accessible.']
+                                    ];
+                                }
+                            @endphp
+                            @foreach($features as $feat)
+                                <div class="d-flex align-items-start gap-3 mb-4">
+                                    <div class="bg-success bg-opacity-10 text-success rounded-circle p-1.5 d-flex align-items-center justify-content-center flex-shrink-0" style="width: 32px; height: 32px;">
+                                        <i class="bi {{ $feat['icon'] ?? 'bi-check-circle-fill' }} fs-5"></i>
+                                    </div>
+                                    <div>
+                                        <h6 class="fw-bold mb-1 text-dark">{{ $feat['title'] ?? '' }}</h6>
+                                        <p class="text-muted small mb-0">{{ $feat['description'] ?? '' }}</p>
+                                    </div>
                                 </div>
-                            </div>
-                            <div class="d-flex align-items-start gap-3 mb-4">
-                                 <i class="bi bi-check-circle-fill text-success fs-5 flex-shrink-0"></i>
-                                <div>
-                                    <h6 class="fw-bold mb-1">Scheduled Slots</h6>
-                                    <p class="text-muted small mb-0">No waiting in long queues. Book your specific time slot with your preferred doctor.</p>
-                                </div>
-                            </div>
-                             <div class="d-flex align-items-start gap-3">
-                                 <i class="bi bi-check-circle-fill text-success fs-5 flex-shrink-0"></i>
-                                <div>
-                                    <h6 class="fw-bold mb-1">Digital Records</h6>
-                                    <p class="text-muted small mb-0">Your medical history and prescriptions are securely stored and easily accessible.</p>
-                                </div>
-                            </div>
+                            @endforeach
                         </div>
                         <div class="card-footer bg-light p-3 text-center border-top">
-                            <small class="text-muted">Trusted by thousands of patients in Multan</small>
+                            <small class="text-muted">Trusted by thousands of patients in {{ $clinicSetting->clinic_name ?? 'Multan Cancer Clinic' }}</small>
                         </div>
                     </div>
                 </div>
@@ -113,7 +121,7 @@
                 <div class="col-lg-8 text-center">
                     <span class="badge bg-primary bg-opacity-10 text-primary mb-2">Availability</span>
                     <h2 class="fw-bold mb-3">Doctor Schedule</h2>
-                    <p class="text-muted">Different specialists are available at different times between <strong>02:00 PM and 08:00 PM</strong>. Please login to view exact slots.</p>
+                    <p class="text-muted">Different specialists are available at different times between <strong>{{ $clinicSetting->clinic_hours ?? '02:00 PM and 08:00 PM' }}</strong>. Please login to view exact slots.</p>
                 </div>
             </div>
 
@@ -190,42 +198,33 @@
             <div class="col-lg-6">
                 <h3 class="fw-bold mb-4">Patient Information</h3>
                 <div class="accordion accordion-flush shadow-sm rounded-3 overflow-hidden border" id="faqAccordion">
-                    <div class="accordion-item">
-                        <h2 class="accordion-header">
-                            <button class="accordion-button fw-bold collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq1">
-                                Do you offer emergency services?
-                            </button>
-                        </h2>
-                        <div id="faq1" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
-                            <div class="accordion-body text-muted small">
-                                No, Multan Cancer Clinic is a consultant-based clinic. We do not have a 24-hour emergency department. Please visit a general hospital for emergencies.
+                    @php
+                        $faqs = $clinicSetting->faqs;
+                        if (is_string($faqs)) {
+                            $faqs = json_decode($faqs, true);
+                        }
+                        if (!is_array($faqs) || empty($faqs)) {
+                            $faqs = [
+                                ['question' => 'Do you offer emergency services?', 'answer' => 'No, Multan Cancer Clinic is a consultant-based clinic. We do not have a 24-hour emergency department. Please visit a general hospital for emergencies.'],
+                                ['question' => 'How do I book an appointment?', 'answer' => 'You must register or login to our portal. Once logged in, you can view available doctors and select a time slot that suits you.'],
+                                ['question' => 'What are the clinic timings?', 'answer' => 'Our clinic operates from 02:00 PM to 08:00 PM, Monday through Saturday. Doctors have specific slots within these hours.']
+                            ];
+                        }
+                    @endphp
+                    @foreach($faqs as $index => $faq)
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button fw-bold collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq-item-{{ $index }}">
+                                    {{ $faq['question'] ?? '' }}
+                                </button>
+                            </h2>
+                            <div id="faq-item-{{ $index }}" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                                <div class="accordion-body text-muted small">
+                                    {{ $faq['answer'] ?? '' }}
+                                </div>
                             </div>
                         </div>
-                    </div>
-                    <div class="accordion-item">
-                        <h2 class="accordion-header">
-                            <button class="accordion-button fw-bold collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq2">
-                                How do I book an appointment?
-                            </button>
-                        </h2>
-                        <div id="faq2" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
-                            <div class="accordion-body text-muted small">
-                                You must register or login to our portal. Once logged in, you can view available doctors and select a time slot that suits you.
-                            </div>
-                        </div>
-                    </div>
-                    <div class="accordion-item">
-                        <h2 class="accordion-header">
-                            <button class="accordion-button fw-bold collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq3">
-                                What are the clinic timings?
-                            </button>
-                        </h2>
-                        <div id="faq3" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
-                            <div class="accordion-body text-muted small">
-                                Our clinic operates from 02:00 PM to 08:00 PM, Monday through Saturday. Doctors have specific slots within these hours.
-                            </div>
-                        </div>
-                    </div>
+                    @endforeach
                 </div>
             </div>
             <div class="col-lg-6">

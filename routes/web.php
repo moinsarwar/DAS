@@ -12,6 +12,7 @@ Route::get('/doctors', [App\Http\Controllers\WelcomeController::class, 'doctors'
 Route::get('/about', [App\Http\Controllers\WelcomeController::class, 'about'])->name('public.about');
 Route::get('/contact', [App\Http\Controllers\WelcomeController::class, 'contact'])->name('public.contact');
 Route::post('/contact', [App\Http\Controllers\WelcomeController::class, 'storeContact'])->name('contact.store');
+Route::get('/page/{slug}', [App\Http\Controllers\WelcomeController::class, 'showPage'])->name('public.page');
 
 // Auth Routes
 // Auth Routes
@@ -73,6 +74,14 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     // Clinic Settings
     Route::get('/settings', [AdminController::class, 'settings'])->name('settings');
     Route::put('/settings', [AdminController::class, 'updateSettings'])->name('settings.update');
+
+    // Dynamic Pages CMS
+    Route::get('/pages', [AdminController::class, 'pages'])->name('pages.index');
+    Route::get('/pages/create', [AdminController::class, 'createPage'])->name('pages.create');
+    Route::post('/pages', [AdminController::class, 'storePage'])->name('pages.store');
+    Route::get('/pages/{id}/edit', [AdminController::class, 'editPage'])->name('pages.edit');
+    Route::put('/pages/{id}', [AdminController::class, 'updatePage'])->name('pages.update');
+    Route::delete('/pages/{id}', [AdminController::class, 'deletePage'])->name('pages.delete');
 });
 
 // ===============================

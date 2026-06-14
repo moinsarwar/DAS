@@ -33,21 +33,59 @@ class AdminController extends Controller
 
     public function storeCategory(Request $request)
     {
-        $request->validate(['name' => 'required|string|max:255']);
-        Category::create($request->all());
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'icon' => 'nullable|string|max:255',
+            'category_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg,webp|max:2048',
+        ]);
+        
+        $data = $request->only(['name', 'description', 'icon']);
+        if ($request->hasFile('category_image')) {
+            $path = $request->file('category_image')->store('categories', 'public');
+            $data['image_path'] = $path;
+        }
+
+        Category::create($data);
         return back()->with('success', 'Category created successfully.');
     }
 
     public function updateCategory(Request $request, $id)
     {
-        $request->validate(['name' => 'required|string|max:255']);
-        Category::findOrFail($id)->update(['name' => $request->name]);
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'icon' => 'nullable|string|max:255',
+            'category_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg,webp|max:2048',
+        ]);
+
+        $category = Category::findOrFail($id);
+        $data = $request->only(['name', 'description', 'icon']);
+
+        if ($request->boolean('remove_image')) {
+            if ($category->image_path && \Illuminate\Support\Facades\Storage::disk('public')->exists($category->image_path)) {
+                \Illuminate\Support\Facades\Storage::disk('public')->delete($category->image_path);
+            }
+            $data['image_path'] = null;
+        } elseif ($request->hasFile('category_image')) {
+            if ($category->image_path && \Illuminate\Support\Facades\Storage::disk('public')->exists($category->image_path)) {
+                \Illuminate\Support\Facades\Storage::disk('public')->delete($category->image_path);
+            }
+            $path = $request->file('category_image')->store('categories', 'public');
+            $data['image_path'] = $path;
+        }
+
+        $category->update($data);
         return back()->with('success', 'Category updated.');
     }
 
     public function deleteCategory($id)
     {
-        Category::findOrFail($id)->delete();
+        $category = Category::findOrFail($id);
+        if ($category->image_path && \Illuminate\Support\Facades\Storage::disk('public')->exists($category->image_path)) {
+            \Illuminate\Support\Facades\Storage::disk('public')->delete($category->image_path);
+        }
+        $category->delete();
         return back()->with('success', 'Category deleted.');
     }
 
@@ -431,7 +469,24 @@ class AdminController extends Controller
             'landline' => 'nullable|string',
             'contact_email' => 'nullable|email',
             'address' => 'required|string',
-            'logo' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg',
+            'logo' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            
+            'clinic_name' => 'nullable|string|max:255',
+            'hero_title' => 'nullable|string|max:255',
+            'hero_subtitle' => 'nullable|string|max:255',
+            'hero_badge' => 'nullable|string|max:255',
+            'hero_description' => 'nullable|string',
+            'clinic_hours' => 'nullable|string|max:255',
+            'clinic_days' => 'nullable|string|max:255',
+            'notice_text' => 'nullable|string',
+            'about_short' => 'nullable|string',
+            'social_facebook' => 'nullable|url|max:255',
+            'social_twitter' => 'nullable|url|max:255',
+            'social_instagram' => 'nullable|url|max:255',
+            'doctors_title' => 'nullable|string|max:255',
+            'doctors_description' => 'nullable|string',
+            'features' => 'nullable|string',
+            'faqs' => 'nullable|string',
         ]);
 
         $settings = \App\Models\ClinicSetting::first();
@@ -443,6 +498,33 @@ class AdminController extends Controller
         $settings->landline = $request->landline;
         $settings->contact_email = $request->contact_email;
         $settings->address = $request->address;
+        
+        $settings->clinic_name = $request->clinic_name;
+        $settings->hero_title = $request->hero_title;
+        $settings->hero_subtitle = $request->hero_subtitle;
+        $settings->hero_badge = $request->hero_badge;
+        $settings->hero_description = $request->hero_description;
+        $settings->clinic_hours = $request->clinic_hours;
+        $settings->clinic_days = $request->clinic_days;
+        $settings->notice_text = $request->notice_text;
+        $settings->about_short = $request->about_short;
+        $settings->social_facebook = $request->social_facebook;
+        $settings->social_twitter = $request->social_twitter;
+        $settings->social_instagram = $request->social_instagram;
+        $settings->doctors_title = $request->doctors_title;
+        $settings->doctors_description = $request->doctors_description;
+
+        if ($request->filled('features')) {
+            $settings->features = json_decode($request->features, true);
+        } else {
+            $settings->features = [];
+        }
+
+        if ($request->filled('faqs')) {
+            $settings->faqs = json_decode($request->faqs, true);
+        } else {
+            $settings->faqs = [];
+        }
 
         if ($request->hasFile('logo')) {
             // Delete old logo if exists
@@ -474,5 +556,71 @@ class AdminController extends Controller
     {
         \App\Models\ContactMessage::findOrFail($id)->delete();
         return back()->with('success', 'Message deleted.');
+    }
+
+    // Dynamic Pages CMS Actions
+    public function pages()
+    {
+        $pages = \App\Models\Page::orderBy('id', 'desc')->get();
+        return view('admin.pages.index', compact('pages'));
+    }
+
+    public function createPage()
+    {
+        return view('admin.pages.create');
+    }
+
+    public function storePage(Request $request)
+    {
+        $request->validate([
+            'title' => 'required|string|max:255',
+            'slug' => 'required|string|max:255|unique:pages,slug',
+            'content' => 'nullable|string',
+        ]);
+
+        \App\Models\Page::create([
+            'title' => $request->title,
+            'slug' => \Illuminate\Support\Str::slug($request->slug),
+            'content' => $request->content,
+            'is_active' => $request->has('is_active'),
+            'show_in_navbar' => $request->has('show_in_navbar'),
+            'show_in_footer' => $request->has('show_in_footer'),
+        ]);
+
+        return redirect()->route('admin.pages.index')->with('success', 'Dynamic page created successfully.');
+    }
+
+    public function editPage($id)
+    {
+        $page = \App\Models\Page::findOrFail($id);
+        return view('admin.pages.edit', compact('page'));
+    }
+
+    public function updatePage(Request $request, $id)
+    {
+        $page = \App\Models\Page::findOrFail($id);
+
+        $request->validate([
+            'title' => 'required|string|max:255',
+            'slug' => 'required|string|max:255|unique:pages,slug,' . $id,
+            'content' => 'nullable|string',
+        ]);
+
+        $page->update([
+            'title' => $request->title,
+            'slug' => \Illuminate\Support\Str::slug($request->slug),
+            'content' => $request->content,
+            'is_active' => $request->has('is_active'),
+            'show_in_navbar' => $request->has('show_in_navbar'),
+            'show_in_footer' => $request->has('show_in_footer'),
+        ]);
+
+        return redirect()->route('admin.pages.index')->with('success', 'Dynamic page updated successfully.');
+    }
+
+    public function deletePage($id)
+    {
+        \App\Models\Page::findOrFail($id)->delete();
+        return back()->with('success', 'Dynamic page deleted successfully.');
     }
 }

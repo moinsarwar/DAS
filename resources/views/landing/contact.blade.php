@@ -62,7 +62,7 @@
                     </div>
                     <div>
                         <h5 class="fw-bold mb-1">Working Hours</h5>
-                        <p class="text-muted mb-0">Mon - Sat: 02:00 PM - 08:00 PM</p>
+                        <p class="text-muted mb-0">{{ $clinicSetting->clinic_days ?? 'Mon - Sat' }}: {{ $clinicSetting->clinic_hours ?? '02:00 PM - 08:00 PM' }}</p>
                         <p class="text-danger mb-0 small">Sunday: Closed</p>
                     </div>
                 </div>
