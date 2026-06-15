@@ -261,6 +261,7 @@ class PatientController extends Controller
         // Process Refund if Paid
         if ($app->payment_status === 'paid' && $app->transaction_id) {
             $apiSecret = config('services.safepay.api_secret');
+            $apiKey = config('services.safepay.api_key');
             $environment = config('services.safepay.environment', 'sandbox');
             $apiBase = $environment === 'sandbox' ? 'https://sandbox.api.getsafepay.com' : 'https://api.getsafepay.com';
 
@@ -270,7 +271,10 @@ class PatientController extends Controller
                     "api_base" => $apiBase,
                 ]);
 
-                $safepay->order->refund($app->transaction_id);
+                // Pass an associative array to force JSON object {} instead of array []
+                $safepay->order->refund($app->transaction_id, [
+                    "merchant_api_key" => $apiKey
+                ]);
                 \Log::info('Refund initiated for appointment ' . $app->id . ' with tracker ' . $app->transaction_id);
             } catch (\Exception $e) {
                 \Log::error('Safepay Refund Exception: ' . $e->getMessage());
