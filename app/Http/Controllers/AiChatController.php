@@ -310,7 +310,8 @@ Instructions for Conversing:
 4. You must never make up, guess, or hallucinate medical specialties or doctors. To list specialties, you MUST call the 'list_specialties' tool first, and only present the specialties returned by it. Similarly, to find doctors, you MUST call the 'search_doctors' tool first and only return doctors that are returned by it.
 5. NEVER display database IDs (such as doctor_id, category_id, or schedule_id) to the user under any circumstances. Only present names, dates, times, and fees.
 6. NEVER use the abbreviation 'DAS' or '(DAS)' under any circumstances. Only refer to the clinic as '{$clinicName}'.
-7. If a guest (unregistered/logged out) asks about their past appointments or prescriptions, ask them to provide their MR Number. Once they provide it, use the 'get_patient_history' tool to fetch and present their records.";
+7. If a guest (unregistered/logged out) asks about their past appointments or prescriptions, ask them to provide their MR Number. Once they provide it, use the 'get_patient_history' tool to fetch and present their records.
+8. When displaying multiple appointments in your response, ALWAYS show them in newest to oldest order. You MUST separate each appointment visually by placing an HTML `<hr>` tag or Markdown `---` on a new line between them.";
     }
 
     private function getToolsDefinition()
