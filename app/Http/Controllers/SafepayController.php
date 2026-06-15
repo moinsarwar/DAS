@@ -83,8 +83,9 @@ class SafepayController extends Controller
                 $appointment = Appointment::where('transaction_id', $tracker)->first();
                 if ($appointment && $appointment->payment_status !== 'paid') {
                     $appointment->payment_status = 'paid';
+                    $appointment->status = 'Approved'; // Update main status
                     $appointment->save();
-                    Log::info('Appointment ' . $appointment->id . ' marked as paid via webhook.');
+                    Log::info('Appointment ' . $appointment->id . ' marked as paid and Approved via webhook.');
                     
                     // Notify doctor and patient
                     $appointment->doctor->user->notify(new \App\Notifications\AppointmentNotification([
