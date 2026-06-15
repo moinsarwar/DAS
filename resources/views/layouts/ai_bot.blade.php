@@ -241,9 +241,32 @@ document.addEventListener("DOMContentLoaded", function () {
     const chatInput = document.getElementById("ai-chat-input");
     const chatHistory = document.getElementById("ai-chat-history");
 
+    function saveChatHistory() {
+        localStorage.setItem('aiChatHistory', chatHistory.innerHTML);
+    }
+
+    function loadChatHistory() {
+        const savedHistory = localStorage.getItem('aiChatHistory');
+        if (savedHistory) {
+            chatHistory.innerHTML = savedHistory;
+            scrollToBottom();
+        }
+        if (localStorage.getItem('aiChatOpen') === 'true') {
+            chatPanel.classList.add("active");
+        }
+    }
+
+    function saveChatState() {
+        localStorage.setItem('aiChatOpen', chatPanel.classList.contains("active"));
+    }
+
+    // Load chat history on page load
+    loadChatHistory();
+
     // Toggle panel with active class transitions
     toggleBtn.addEventListener("click", function () {
         chatPanel.classList.toggle("active");
+        saveChatState();
         if (chatPanel.classList.contains("active")) {
             scrollToBottom();
             chatInput.focus();
@@ -253,6 +276,7 @@ document.addEventListener("DOMContentLoaded", function () {
     // Close panel
     closeBtn.addEventListener("click", function () {
         chatPanel.classList.remove("active");
+        saveChatState();
     });
 
     // Handle suggestions click via event delegation
@@ -308,6 +332,7 @@ document.addEventListener("DOMContentLoaded", function () {
                         </div>
                     `;
                     scrollToBottom();
+                    saveChatHistory();
                 }
             })
             .catch(err => {
@@ -331,6 +356,7 @@ document.addEventListener("DOMContentLoaded", function () {
         `;
         chatHistory.appendChild(msgDiv);
         scrollToBottom();
+        saveChatHistory();
     }
 
     function appendAssistantMessage(text) {
@@ -349,6 +375,7 @@ document.addEventListener("DOMContentLoaded", function () {
         `;
         chatHistory.appendChild(msgDiv);
         scrollToBottom();
+        saveChatHistory();
     }
 
     function appendRegistrationCard(info) {
@@ -386,6 +413,7 @@ document.addEventListener("DOMContentLoaded", function () {
         `;
         chatHistory.appendChild(cardDiv);
         scrollToBottom();
+        saveChatHistory();
     }
 
     function showTypingIndicator() {
@@ -426,6 +454,7 @@ document.addEventListener("DOMContentLoaded", function () {
             suggestionBlock.style.transform = "translateY(-10px)";
             setTimeout(() => {
                 suggestionBlock.remove();
+                saveChatHistory();
             }, 250);
         }
 
