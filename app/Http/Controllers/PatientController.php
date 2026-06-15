@@ -261,31 +261,42 @@ class PatientController extends Controller
         // Process Refund if Paid
         if ($app->payment_status === 'paid' && $app->transaction_id) {
             $apiSecret = config('services.safepay.api_secret');
-            $apiKey = config('services.safepay.api_key');
             $environment = config('services.safepay.environment', 'sandbox');
             $apiBase = $environment === 'sandbox' ? 'https://sandbox.api.getsafepay.com' : 'https://api.getsafepay.com';
 
-            try {
-                $safepay = new \Safepay\SafepayClient([
-                    "api_key" => $apiSecret,
-                    "api_base" => $apiBase,
-                ]);
+            // Calculate partial refund: Fee minus 300 Rs cancellation charge
+            $cancellationFee = 300;
+            $refundAmount = max(0, $app->fee - $cancellationFee);
 
-                \Log::info('Initiating refund. Fee is: ' . $app->fee);
-                // In Safepay V3, sometimes refund amount is float, or tracker is required in body.
-                $safepay->order->refund($app->transaction_id, [
-                    "merchant_api_key" => $apiKey,
-                    "tracker" => $app->transaction_id,
-                    "amount" => (float) $app->fee, // Try float instead of minor units
-                    "currency" => "PKR"
-                ]);
-                \Log::info('Refund initiated for appointment ' . $app->id . ' with tracker ' . $app->transaction_id);
-            } catch (\Exception $e) {
-                \Log::error('Safepay Refund Exception: ' . $e->getMessage());
+            if ($refundAmount > 0) {
+                try {
+                    $safepay = new \Safepay\SafepayClient([
+                        "api_key" => $apiSecret,
+                        "api_base" => $apiBase,
+                    ]);
+
+                    \Log::info('Initiating partial refund. Total Fee: ' . $app->fee . ', Refund: ' . $refundAmount);
+                    
+                    // Send amount in paisas (minor units)
+                    $safepay->order->refund($app->transaction_id, [
+                        "amount" => (int) ($refundAmount * 100),
+                        "currency" => "PKR"
+                    ]);
+                    
+                    \Log::info('Partial Refund successful for appointment ' . $app->id);
+                    
+                    // Update refunded amount in DB
+                    $app->refunded_amount += $refundAmount;
+                    $app->save();
+                } catch (\Exception $e) {
+                    \Log::error('Safepay Refund Exception: ' . $e->getMessage());
+                }
             }
         }
 
-        $app->delete();
+        // Change status to Cancelled instead of deleting, so remaining refund can be managed later
+        $app->status = 'Cancelled';
+        $app->save();
 
         // Notify Patient (Visual confirmation via toast is already there, but add persistence if needed)
         // Usually, manual action doesn't need self-notification, but per requirements:
