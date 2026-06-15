@@ -134,7 +134,7 @@ class PatientController extends Controller
         $environment = config('services.safepay.environment', 'sandbox');
         $apiBase = $environment === 'sandbox' ? 'https://sandbox.api.getsafepay.com' : 'https://api.getsafepay.com';
 
-        if ($apiKey && $apiSecret && $appointment->fee > 0) {
+        if ($request->input('pay_now') === 'yes' && $apiKey && $apiSecret && $appointment->fee > 0) {
             try {
                 $safepay = new \Safepay\SafepayClient([
                     "api_key" => $apiSecret,

@@ -55,6 +55,7 @@
                                         <input type="hidden" name="schedule_id" value="{{ $schedule->id }}">
                                         <input type="hidden" name="appointment_date" value="{{ $date }}">
                                         <input type="hidden" name="time_slot" value="{{ $slot['value'] }}">
+                                        <input type="hidden" name="pay_now" value="yes" class="pay-now-input">
                                         <button type="button" class="btn btn-outline-primary w-100"
                                             onclick="confirmBooking({{ $loop->index }}, '{{ $slot['time'] }}')">
                                             {{ $slot['time'] }}
@@ -87,7 +88,24 @@
                 confirmButtonText: 'Yes, Book it!'
             }).then((result) => {
                 if (result.isConfirmed) {
-                    document.getElementById('book-form-' + index).submit();
+                    Swal.fire({
+                        title: 'Pay Online?',
+                        text: 'Would you like to pay the consultation fee now securely via Safepay?',
+                        icon: 'info',
+                        showCancelButton: true,
+                        confirmButtonColor: '#0d9488',
+                        cancelButtonColor: '#64748b',
+                        confirmButtonText: 'Yes, Pay Now',
+                        cancelButtonText: 'No, Pay Later (Pending)'
+                    }).then((payResult) => {
+                        let form = document.getElementById('book-form-' + index);
+                        if (payResult.isConfirmed) {
+                            form.querySelector('.pay-now-input').value = 'yes';
+                        } else {
+                            form.querySelector('.pay-now-input').value = 'no';
+                        }
+                        form.submit();
+                    });
                 }
             })
         }
