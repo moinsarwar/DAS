@@ -480,10 +480,21 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 
-    // Bold formatting and lists
+    // Bold formatting, lists to buttons, and newlines
     function formatMessageText(text) {
-        let html = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-        html = html.replace(/^\s*[-*]\s*(.*?)$/gm, '• $1');
+        let html = escapeHtml(text);
+        
+        // Bold formatting
+        html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+        
+        // Convert lists (e.g. - item, * item, 1. item) to clickable buttons
+        html = html.replace(/^\s*(?:[-*]|\d+\.)\s+(.*?)$/gm, function(match, p1) {
+            return `<button type="button" class="btn btn-sm rounded-pill chip-btn d-inline-flex align-items-center gap-2 mt-1 mb-1" data-text="${p1}"><span>${p1}</span></button>`;
+        });
+        
+        // Convert remaining newlines to <br>
+        html = html.replace(/\n/g, '<br>');
+        
         return html;
     }
 });

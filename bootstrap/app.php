@@ -17,6 +17,9 @@ return Application::configure(basePath: dirname(__DIR__))
             'patient' => \App\Http\Middleware\PatientMiddleware::class,
             'receptionist' => \App\Http\Middleware\ReceptionistMiddleware::class,
         ]);
+        $middleware->validateCsrfTokens(except: [
+            'safepay/webhook',
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //

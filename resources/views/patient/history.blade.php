@@ -30,6 +30,7 @@
                                     <th>Doctor</th>
                                     <th>Date</th>
                                     <th>Status</th>
+                                    <th>Payment</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -56,6 +57,27 @@
                                             <span class="badge {{ $badgeClass }}">{{ $app->status }}</span>
                                             @if($app->prescription)
                                                 <br><a href="{{ route('patient.prescription.view', $app->id) }}" class="small">View Rx</a>
+                                            @endif
+                                        </td>
+                                        <td>
+                                            @if($app->payment_status === 'paid')
+                                                <span class="badge bg-success small"><i class="bi bi-check-circle"></i> Paid</span>
+                                            @elseif($app->payment_status === 'failed')
+                                                <span class="badge bg-danger small"><i class="bi bi-x-circle"></i> Failed</span>
+                                                @if($app->status !== 'Checked')
+                                                <form action="{{ route('patient.appointments.pay', $app->id) }}" method="POST" class="mt-2">
+                                                    @csrf
+                                                    <button type="submit" class="btn btn-sm btn-outline-success" style="font-size: 0.75rem;">Pay Fee</button>
+                                                </form>
+                                                @endif
+                                            @else
+                                                <span class="badge bg-warning text-dark small">Pending</span>
+                                                @if($app->status !== 'Checked')
+                                                <form action="{{ route('patient.appointments.pay', $app->id) }}" method="POST" class="mt-2">
+                                                    @csrf
+                                                    <button type="submit" class="btn btn-sm btn-outline-success" style="font-size: 0.75rem;">Pay Fee</button>
+                                                </form>
+                                                @endif
                                             @endif
                                         </td>
                                     </tr>

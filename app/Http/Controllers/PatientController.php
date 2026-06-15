@@ -10,6 +10,8 @@ use App\Models\Prescription;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 
 class PatientController extends Controller
 {
@@ -113,6 +115,8 @@ class PatientController extends Controller
             'time_slot' => $request->time_slot,
             'status' => 'Pending',
             'problem' => 'Patient Self Booking',
+            'fee' => $doctor->fees ?? 0,
+            'payment_status' => 'pending'
         ]);
 
         // Notify Doctor
@@ -124,16 +128,104 @@ class PatientController extends Controller
             'type' => 'new_booking'
         ]));
 
-        // Notify Patient (Confirmation)
-        Auth::user()->notify(new \App\Notifications\AppointmentNotification([
-            'message' => 'Appointment request sent to Dr. ' . $appointment->doctor->user->name,
-            'url' => route('patient.history'),
-            'icon' => 'bi-check-circle',
-            'color' => 'text-success',
-            'type' => 'booking_confirmation'
-        ]));
+        // Initialize Safepay Payment
+        $apiKey = config('services.safepay.api_key');
+        $environment = config('services.safepay.environment', 'sandbox');
+        $apiUrl = $environment === 'sandbox' ? 'https://sandbox.api.getsafepay.com' : 'https://api.getsafepay.com';
 
+        if ($apiKey && $appointment->fee > 0) {
+            try {
+                $response = Http::post("{$apiUrl}/order/v1/init", [
+                    'client' => $apiKey,
+                    'amount' => (float) $appointment->fee,
+                    'currency' => 'PKR',
+                    'environment' => $environment,
+                ]);
+
+                if ($response->successful()) {
+                    $tracker = $response->json('data.token') ?? $response->json('token');
+                    
+                    if ($tracker) {
+                        $appointment->transaction_id = $tracker;
+                        $appointment->save();
+
+                        $redirectUrl = route('safepay.callback', ['order_id' => $appointment->id]);
+                        $cancelUrl = route('safepay.cancel');
+                        
+                        $params = [
+                            'env' => $environment,
+                            'tracker' => $tracker,
+                            'source' => 'custom',
+                            'redirect_url' => $redirectUrl,
+                            'cancel_url' => $cancelUrl
+                        ];
+                        $checkoutUrl = "{$apiUrl}/checkout/pay?" . http_build_query($params);
+
+                        return redirect()->away($checkoutUrl);
+                    }
+                } else {
+                    Log::error('Safepay Init Error: ' . $response->body());
+                }
+            } catch (\Exception $e) {
+                Log::error('Safepay Exception: ' . $e->getMessage());
+            }
+        }
+
+        // Fallback if payment fails to initiate
         return redirect()->route('patient.dashboard')->with('success', 'Appointment booked successfully! Status: Pending');
+    }
+
+    public function payFee($id)
+    {
+        $appointment = Appointment::where('patient_id', Auth::id())->findOrFail($id);
+
+        if ($appointment->payment_status === 'paid') {
+            return back()->with('info', 'This appointment is already paid.');
+        }
+
+        $apiKey = config('services.safepay.api_key');
+        $environment = config('services.safepay.environment', 'sandbox');
+        $apiUrl = $environment === 'sandbox' ? 'https://sandbox.api.getsafepay.com' : 'https://api.getsafepay.com';
+
+        if ($apiKey && $appointment->fee > 0) {
+            try {
+                $response = Http::post("{$apiUrl}/order/v1/init", [
+                    'client' => $apiKey,
+                    'amount' => (float) $appointment->fee,
+                    'currency' => 'PKR',
+                    'environment' => $environment,
+                ]);
+
+                if ($response->successful()) {
+                    $tracker = $response->json('data.token') ?? $response->json('token');
+                    
+                    if ($tracker) {
+                        $appointment->transaction_id = $tracker;
+                        $appointment->save();
+
+                        $redirectUrl = route('safepay.callback', ['order_id' => $appointment->id]);
+                        $cancelUrl = route('safepay.cancel');
+                        
+                        $params = [
+                            'env' => $environment,
+                            'tracker' => $tracker,
+                            'source' => 'custom',
+                            'redirect_url' => $redirectUrl,
+                            'cancel_url' => $cancelUrl
+                        ];
+                        $checkoutUrl = "{$apiUrl}/checkout/pay?" . http_build_query($params);
+
+                        return redirect()->away($checkoutUrl);
+                    }
+                } else {
+                    Log::error('Safepay Init Error in payFee: ' . $response->body());
+                }
+            } catch (\Exception $e) {
+                Log::error('Safepay Exception in payFee: ' . $e->getMessage());
+            }
+        }
+
+        return back()->with('error', 'Unable to initiate payment at this time. Please try again later.');
     }
 
     // Delete appointment (ONLY if not Checked)

@@ -42,6 +42,7 @@
                                 <th>Doctor</th>
                                 <th>Date & Time</th>
                                 <th>Status</th>
+                                <th>Payment</th>
                                 <th>Prescription</th>
                                 <th>Action</th>
                             </tr>
@@ -72,6 +73,15 @@
                                         <span class="badge {{ $badgeClass }}">{{ $app->status }}</span>
                                     </td>
                                     <td>
+                                        @if($app->payment_status === 'paid')
+                                            <span class="badge bg-success"><i class="bi bi-check-circle me-1"></i>Paid</span>
+                                        @elseif($app->payment_status === 'failed')
+                                            <span class="badge bg-danger"><i class="bi bi-x-circle me-1"></i>Failed</span>
+                                        @else
+                                            <span class="badge bg-warning text-dark"><i class="bi bi-hourglass me-1"></i>Pending</span>
+                                        @endif
+                                    </td>
+                                    <td>
                                         @if($app->prescription)
                                             <a href="{{ route('patient.prescription.view', $app->id) }}"
                                                 class="btn btn-sm btn-outline-success">
@@ -83,6 +93,12 @@
                                     </td>
                                     <td>
                                         @if($app->status !== 'Checked')
+                                            @if($app->payment_status !== 'paid')
+                                                <form action="{{ route('patient.appointments.pay', $app->id) }}" method="POST" class="d-inline">
+                                                    @csrf
+                                                    <button type="submit" class="btn btn-sm btn-outline-success me-1">Pay Fee</button>
+                                                </form>
+                                            @endif
                                             <form id="cancel-form-{{ $app->id }}"
                                                 action="{{ route('patient.appointments.delete', $app->id) }}" method="POST"
                                                 class="d-inline">

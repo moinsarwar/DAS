@@ -169,6 +169,7 @@ Route::middleware(['auth', 'patient'])->prefix('patient')->name('patient.')->gro
     // Appointments
     Route::delete('/appointments/{id}', [PatientController::class, 'deleteAppointment'])->name('appointments.delete');
     Route::get('/appointments/{id}/prescription', [PatientController::class, 'viewPrescription'])->name('prescription.view');
+    Route::post('/appointments/{id}/pay', [PatientController::class, 'payFee'])->name('appointments.pay');
 
     // Medical History
     Route::get('/history', [PatientController::class, 'myHistory'])->name('history');
@@ -180,6 +181,11 @@ Route::middleware('auth')->prefix('notifications')->name('notifications.')->grou
     Route::post('/{id}/read', [\App\Http\Controllers\NotificationController::class, 'markRead'])->name('read');
     Route::post('/read-all', [\App\Http\Controllers\NotificationController::class, 'markAllRead'])->name('readAll');
 });
+
+// Safepay Routes
+Route::get('/safepay/callback', [\App\Http\Controllers\SafepayController::class, 'callback'])->name('safepay.callback');
+Route::get('/safepay/cancel', [\App\Http\Controllers\SafepayController::class, 'cancel'])->name('safepay.cancel');
+Route::post('/safepay/webhook', [\App\Http\Controllers\SafepayController::class, 'webhook'])->name('safepay.webhook');
 
 // AI Chatbot Routes
 Route::post('/ai/chat', [AiChatController::class, 'chat'])->name('ai.chat');
