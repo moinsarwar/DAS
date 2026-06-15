@@ -5,6 +5,7 @@ namespace App\Providers;
 use Illuminate\Support\ServiceProvider;
 use App\Models\ClinicSetting;
 use Illuminate\Support\Facades\View;
+use Illuminate\Support\Facades\URL;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -21,6 +22,10 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        if (str_contains(config('app.url'), 'https://')) {
+            URL::forceScheme('https');
+        }
+
         try {
             // Share clinic settings with all views
             // Using a try-catch block to prevent errors during migration when table doesn't exist yet

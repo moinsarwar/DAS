@@ -165,7 +165,7 @@ class PatientController extends Controller
                         "environment" => $environment,
                         "tracker" => $tracker,
                         "tbt" => $tbt->token,
-                        "source" => "custom",
+                        "source" => "hosted",
                         "cancel_url" => $cancelUrl,
                         "redirect_url" => $redirectUrl,
                     ]);
@@ -225,7 +225,7 @@ class PatientController extends Controller
                         "environment" => $environment,
                         "tracker" => $tracker,
                         "tbt" => $tbt->token,
-                        "source" => "custom",
+                        "source" => "hosted",
                         "cancel_url" => $cancelUrl,
                         "redirect_url" => $redirectUrl,
                     ]);
