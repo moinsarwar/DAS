@@ -271,9 +271,13 @@ class PatientController extends Controller
                     "api_base" => $apiBase,
                 ]);
 
-                // Pass an associative array to force JSON object {} instead of array []
+                \Log::info('Initiating refund. Fee is: ' . $app->fee);
+                // In Safepay V3, sometimes refund amount is float, or tracker is required in body.
                 $safepay->order->refund($app->transaction_id, [
-                    "merchant_api_key" => $apiKey
+                    "merchant_api_key" => $apiKey,
+                    "tracker" => $app->transaction_id,
+                    "amount" => (float) $app->fee, // Try float instead of minor units
+                    "currency" => "PKR"
                 ]);
                 \Log::info('Refund initiated for appointment ' . $app->id . ' with tracker ' . $app->transaction_id);
             } catch (\Exception $e) {
