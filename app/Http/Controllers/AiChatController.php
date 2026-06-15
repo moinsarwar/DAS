@@ -253,29 +253,34 @@ class AiChatController extends Controller
         $time = date('h:i A');
 
         $userContext = "Guest (Unregistered)";
-        $lastAppointmentContext = "No last appointment history available.";
+        $appointmentsContext = "No appointment history available.";
         if (Auth::check()) {
             $userContext = "Authenticated Patient (" . Auth::user()->name . ", MR Number: " . Auth::user()->mr_number . ", ID: " . Auth::id() . ")";
             
-            $lastAppointment = \App\Models\Appointment::where('patient_id', Auth::id())
+            $recentAppointments = \App\Models\Appointment::where('patient_id', Auth::id())
                 ->with(['doctor.user', 'prescription'])
                 ->orderBy('appointment_date', 'desc')
                 ->orderBy('time_slot', 'desc')
-                ->first();
+                ->take(10)
+                ->get();
 
-            if ($lastAppointment) {
-                $docName = $lastAppointment->doctor->user->name ?? 'Unknown Doctor';
-                $status = $lastAppointment->status;
-                $dateFormatted = date('M j, Y', strtotime($lastAppointment->appointment_date));
-                $timeFormatted = date('h:i A', strtotime($lastAppointment->time_slot));
-                $lastAppointmentContext = "User's Last Appointment: With Dr. {$docName} on {$dateFormatted} at {$timeFormatted} (Status: {$status}).";
-                
-                if ($lastAppointment->prescription) {
-                    $meds = strip_tags($lastAppointment->prescription->medicines ?? 'None');
-                    $notes = strip_tags($lastAppointment->prescription->notes ?? 'None');
-                    $lastAppointmentContext .= " Prescription Given: Medicines: {$meds}. Notes: {$notes}.";
-                } else {
-                    $lastAppointmentContext .= " No prescription was given for this appointment.";
+            if ($recentAppointments->isNotEmpty()) {
+                $appointmentsContext = "User's Recent Appointments (ordered newest to oldest):\n";
+                foreach ($recentAppointments as $index => $appt) {
+                    $docName = $appt->doctor->user->name ?? 'Unknown Doctor';
+                    $status = $appt->status;
+                    $dateFormatted = date('M j, Y', strtotime($appt->appointment_date));
+                    $timeFormatted = date('h:i A', strtotime($appt->time_slot));
+                    
+                    $appointmentsContext .= ($index + 1) . ". With Dr. {$docName} on {$dateFormatted} at {$timeFormatted} (Status: {$status}).";
+                    
+                    if ($appt->prescription) {
+                        $meds = strip_tags($appt->prescription->medicines ?? 'None');
+                        $notes = strip_tags($appt->prescription->notes ?? 'None');
+                        $appointmentsContext .= " Prescription Given: Medicines: {$meds}. Notes: {$notes}.\n";
+                    } else {
+                        $appointmentsContext .= " No prescription given.\n";
+                    }
                 }
             }
         }
@@ -289,7 +294,7 @@ Your goal is to help visitors find medical specialties, search doctors, check sc
 Current Environment Context:
 - Today is {$day}, Date: {$date}, Time: {$time}.
 - Current User: {$userContext}
-- {$lastAppointmentContext}
+- {$appointmentsContext}
 
 Instructions for Conversing:
 1. You must converse strictly in English. Do not use Roman Urdu or Urdu under any circumstances. Keep your responses concise, warm, professional, helpful, and natural.
