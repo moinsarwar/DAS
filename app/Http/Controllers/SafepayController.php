@@ -16,24 +16,22 @@ class SafepayController extends Controller
         $tracker = $request->query('tracker');
         $reference = $request->query('reference');
 
-        if ($tracker && $orderId) {
-            $appointment = Appointment::where('id', $orderId)
-                ->where('transaction_id', $tracker)
-                ->first();
+        if ($orderId) {
+            $appointment = Appointment::find($orderId);
 
             if ($appointment) {
-                // In V3, Safepay redirects back with tracker and potentially reference.
-                // It is safer to rely on webhook for actual capture, but for UX we can
-                // assume success if reference is present.
-                if ($reference) {
-                    $appointment->payment_status = 'paid';
-                    $appointment->save();
+                // Since the Webhook might have already marked it as 'paid', we check the DB status first.
+                if ($appointment->payment_status === 'paid') {
                     return redirect()->route('patient.dashboard')->with('success', 'Payment successful! Your appointment is confirmed.');
-                } else {
-                    // If no reference, it might just be a return. Let the webhook handle final status,
-                    // but show a processing message to the user.
+                }
+                
+                // If not paid yet, but we got a tracker or reference back, it's processing.
+                if ($tracker || $reference) {
                     return redirect()->route('patient.dashboard')->with('info', 'Payment is being processed. Status will update shortly.');
                 }
+
+                // If nothing is present but order_id, just redirect back to dashboard normally.
+                return redirect()->route('patient.dashboard')->with('info', 'Returned from payment gateway. Status will update shortly.');
             }
         }
 
