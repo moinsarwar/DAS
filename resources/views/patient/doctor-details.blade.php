@@ -96,12 +96,14 @@
                         confirmButtonColor: '#0d9488',
                         cancelButtonColor: '#64748b',
                         confirmButtonText: 'Yes, Pay Now',
-                        cancelButtonText: 'No, Pay Later (Pending)'
+                        cancelButtonText: 'Cancel'
                     }).then((payResult) => {
                         let form = document.getElementById('book-form-' + index);
                         if (payResult.isConfirmed) {
+                            // User wants to pay now
                             form.querySelector('.pay-now-input').value = 'yes';
                         } else {
+                            // User cancelled payment, but still wants to book
                             form.querySelector('.pay-now-input').value = 'no';
                         }
                         form.submit();
