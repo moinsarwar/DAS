@@ -137,10 +137,14 @@
                             <div class="card h-100 border-0 shadow-sm hover-lift">
                                 <div class="card-body p-4">
                                     <div class="d-flex align-items-center mb-4">
-                                        <div class="bg-primary bg-gradient rounded-circle d-flex align-items-center justify-content-center text-white me-3 shadow-sm"
-                                            style="width: 56px; height: 56px; font-size: 1.5rem;">
-                                            <i class="bi bi-person-fill"></i>
-                                        </div>
+                                        @if($doctor->user->profile_photo)
+                                            <img src="{{ asset('storage/' . $doctor->user->profile_photo) }}" class="rounded-circle border me-3 shadow-sm" style="width: 56px; height: 56px; object-fit: cover;" alt="Doctor">
+                                        @else
+                                            <div class="bg-primary bg-gradient rounded-circle d-flex align-items-center justify-content-center text-white me-3 shadow-sm"
+                                                style="width: 56px; height: 56px; font-size: 1.5rem;">
+                                                <i class="bi bi-person-fill"></i>
+                                            </div>
+                                        @endif
                                         <div>
                                             <h6 class="mb-1 fw-bold text-heading">Dr. {{ $doctor->user->name }}</h6>
                                             <span class="badge bg-light text-primary border">{{ $category->name }}</span>
