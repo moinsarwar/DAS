@@ -148,14 +148,12 @@ class PatientController extends Controller
                     "mode" => "payment",
                     "currency" => "PKR",
                     "amount" => (int) ($appointment->fee * 100), // Minor units
-                    "description" => $detailsText,
+                    "order_id" => "APP-" . $appointment->id,
                     "reference" => $detailsText,
-                    "items" => [
-                        [
-                            "name" => $detailsText,
-                            "price" => (int) ($appointment->fee * 100),
-                            "quantity" => 1
-                        ]
+                    "metadata" => [
+                        "description" => $detailsText,
+                        "appointment_date" => $appointment->appointment_date,
+                        "time_slot" => $appointment->time_slot
                     ]
                 ]);
 
@@ -218,14 +216,12 @@ class PatientController extends Controller
                     "mode" => "payment",
                     "currency" => "PKR",
                     "amount" => (int) ($appointment->fee * 100),
-                    "description" => $detailsText,
+                    "order_id" => "APP-" . $appointment->id,
                     "reference" => $detailsText,
-                    "items" => [
-                        [
-                            "name" => $detailsText,
-                            "price" => (int) ($appointment->fee * 100),
-                            "quantity" => 1
-                        ]
+                    "metadata" => [
+                        "description" => $detailsText,
+                        "appointment_date" => $appointment->appointment_date,
+                        "time_slot" => $appointment->time_slot
                     ]
                 ]);
 
