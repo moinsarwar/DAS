@@ -149,12 +149,7 @@ class PatientController extends Controller
                     "currency" => "PKR",
                     "amount" => (int) ($appointment->fee * 100), // Minor units
                     "order_id" => "APP-" . $appointment->id,
-                    "reference" => $detailsText,
-                    "metadata" => [
-                        "description" => $detailsText,
-                        "appointment_date" => $appointment->appointment_date,
-                        "time_slot" => $appointment->time_slot
-                    ]
+                    "reference" => $detailsText
                 ]);
 
                 $tracker = $session->tracker->token ?? null;
@@ -217,12 +212,7 @@ class PatientController extends Controller
                     "currency" => "PKR",
                     "amount" => (int) ($appointment->fee * 100),
                     "order_id" => "APP-" . $appointment->id,
-                    "reference" => $detailsText,
-                    "metadata" => [
-                        "description" => $detailsText,
-                        "appointment_date" => $appointment->appointment_date,
-                        "time_slot" => $appointment->time_slot
-                    ]
+                    "reference" => $detailsText
                 ]);
 
                 $tracker = $session->tracker->token ?? null;
