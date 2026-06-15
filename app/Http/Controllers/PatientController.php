@@ -294,9 +294,8 @@ class PatientController extends Controller
             }
         }
 
-        // Change status to Cancelled instead of deleting, so remaining refund can be managed later
-        $app->status = 'Cancelled';
-        $app->save();
+        // Delete the appointment as requested by user
+        $app->delete();
 
         // Notify Patient (Visual confirmation via toast is already there, but add persistence if needed)
         // Usually, manual action doesn't need self-notification, but per requirements:
