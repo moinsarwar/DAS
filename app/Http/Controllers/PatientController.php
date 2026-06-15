@@ -258,6 +258,25 @@ class PatientController extends Controller
             'type' => 'cancellation'
         ]));
 
+        // Process Refund if Paid
+        if ($app->payment_status === 'paid' && $app->transaction_id) {
+            $apiSecret = config('services.safepay.api_secret');
+            $environment = config('services.safepay.environment', 'sandbox');
+            $apiBase = $environment === 'sandbox' ? 'https://sandbox.api.getsafepay.com' : 'https://api.getsafepay.com';
+
+            try {
+                $safepay = new \Safepay\SafepayClient([
+                    "api_key" => $apiSecret,
+                    "api_base" => $apiBase,
+                ]);
+
+                $safepay->order->refund($app->transaction_id);
+                \Log::info('Refund initiated for appointment ' . $app->id . ' with tracker ' . $app->transaction_id);
+            } catch (\Exception $e) {
+                \Log::error('Safepay Refund Exception: ' . $e->getMessage());
+            }
+        }
+
         $app->delete();
 
         // Notify Patient (Visual confirmation via toast is already there, but add persistence if needed)
