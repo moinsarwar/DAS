@@ -143,7 +143,7 @@ class PatientController extends Controller
 
                 $session = $safepay->order->setup([
                     "merchant_api_key" => $apiKey,
-                    "intent" => "CYBERSOURCE",
+                    "intent" => "SAFEPAY",
                     "mode" => "payment",
                     "currency" => "PKR",
                     "amount" => (int) ($appointment->fee * 100), // Minor units
@@ -203,7 +203,7 @@ class PatientController extends Controller
 
                 $session = $safepay->order->setup([
                     "merchant_api_key" => $apiKey,
-                    "intent" => "CYBERSOURCE",
+                    "intent" => "SAFEPAY",
                     "mode" => "payment",
                     "currency" => "PKR",
                     "amount" => (int) ($appointment->fee * 100),
