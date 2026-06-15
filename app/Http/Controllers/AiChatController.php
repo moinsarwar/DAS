@@ -309,7 +309,8 @@ Instructions for Conversing:
 3. Be professional. Never prescribe medicines or offer medical diagnoses. Only book appointments.
 4. You must never make up, guess, or hallucinate medical specialties or doctors. To list specialties, you MUST call the 'list_specialties' tool first, and only present the specialties returned by it. Similarly, to find doctors, you MUST call the 'search_doctors' tool first and only return doctors that are returned by it.
 5. NEVER display database IDs (such as doctor_id, category_id, or schedule_id) to the user under any circumstances. Only present names, dates, times, and fees.
-6. NEVER use the abbreviation 'DAS' or '(DAS)' under any circumstances. Only refer to the clinic as '{$clinicName}'.";
+6. NEVER use the abbreviation 'DAS' or '(DAS)' under any circumstances. Only refer to the clinic as '{$clinicName}'.
+7. If a guest (unregistered/logged out) asks about their past appointments or prescriptions, ask them to provide their MR Number. Once they provide it, use the 'get_patient_history' tool to fetch and present their records.";
     }
 
     private function getToolsDefinition()
@@ -399,6 +400,23 @@ Instructions for Conversing:
             [
                 'type' => 'function',
                 'function' => [
+                    'name' => 'get_patient_history',
+                    'description' => 'Retrieve a patient\'s recent appointment and prescription history using their MR Number. Use this when an unregistered or logged-out patient provides their MR Number and asks about their past or upcoming appointments.',
+                    'parameters' => [
+                        'type' => 'object',
+                        'properties' => [
+                            'mr_number' => [
+                                'type' => 'string',
+                                'description' => 'The patient\'s MR Number (e.g. MR-202606-0001).'
+                            ]
+                        ],
+                        'required' => ['mr_number']
+                    ]
+                ]
+            ],
+            [
+                'type' => 'function',
+                'function' => [
                     'name' => 'register_and_book',
                     'description' => 'Register a guest visitor and book their appointment in one single flow. Use this ONLY if the current user is a guest (unregistered).',
                     'parameters' => [
@@ -452,6 +470,8 @@ Instructions for Conversing:
                     $args['time_slot'],
                     $args['mr_number'] ?? null
                 );
+            case 'get_patient_history':
+                return $this->toolGetPatientHistory($args['mr_number']);
             case 'register_and_book':
                 return $this->toolRegisterAndBook(
                     $args['name'],
@@ -464,6 +484,59 @@ Instructions for Conversing:
             default:
                 return ['error' => 'Unknown tool command.'];
         }
+    }
+
+    private function toolGetPatientHistory($mrNumber)
+    {
+        $patient = User::where('mr_number', $mrNumber)->where('role', 'patient')->first();
+        if (!$patient) {
+            return ['error' => "No patient found with MR Number {$mrNumber}."];
+        }
+
+        $appointments = \App\Models\Appointment::where('patient_id', $patient->id)
+            ->with(['doctor.user', 'prescription'])
+            ->orderBy('appointment_date', 'desc')
+            ->orderBy('time_slot', 'desc')
+            ->take(10)
+            ->get();
+
+        if ($appointments->isEmpty()) {
+            return [
+                'patient_name' => $patient->name,
+                'message' => 'No appointment history found for this patient.'
+            ];
+        }
+
+        $history = [];
+        foreach ($appointments as $index => $appt) {
+            $docName = $appt->doctor->user->name ?? 'Unknown Doctor';
+            $date = date('M j, Y', strtotime($appt->appointment_date));
+            $time = date('h:i A', strtotime($appt->time_slot));
+            
+            $item = [
+                'index' => $index + 1,
+                'doctor' => "Dr. {$docName}",
+                'date' => $date,
+                'time' => $time,
+                'status' => $appt->status,
+            ];
+
+            if ($appt->prescription) {
+                $item['prescription'] = [
+                    'medicines' => strip_tags($appt->prescription->medicines ?? 'None'),
+                    'notes' => strip_tags($appt->prescription->notes ?? 'None')
+                ];
+            } else {
+                $item['prescription'] = 'No prescription given';
+            }
+
+            $history[] = $item;
+        }
+
+        return [
+            'patient_name' => $patient->name,
+            'recent_appointments' => $history
+        ];
     }
 
     private function toolListSpecialties()
