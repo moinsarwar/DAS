@@ -24,7 +24,7 @@ class SafepayController extends Controller
                 if ($appointment->payment_status === 'paid') {
                     return redirect()->route('patient.dashboard')->with('success', 'Payment successful! Your appointment is confirmed.');
                 }
-                
+
                 // If not paid yet, but we got a tracker or reference back, it's processing.
                 if ($tracker || $reference) {
                     return redirect()->route('patient.dashboard')->with('info', 'Payment is being processed. Status will update shortly.');
@@ -56,7 +56,7 @@ class SafepayController extends Controller
         }
 
         $payload = $request->getContent(); // Get raw JSON payload
-        
+
         try {
             $event = \Safepay\Webhook::constructEvent($payload, $signature, $webhookSecret);
         } catch (\Exception $e) {
@@ -68,12 +68,12 @@ class SafepayController extends Controller
 
         if ($event->type === 'payment.succeeded') {
             $payment = $event->data;
-            
+
             // Extract tracker token from the payment event data
-            $tracker = is_array($payment) && isset($payment['tracker']['token']) 
-                ? $payment['tracker']['token'] 
+            $tracker = is_array($payment) && isset($payment['tracker']['token'])
+                ? $payment['tracker']['token']
                 : (is_array($payment) && isset($payment['tracker']) ? $payment['tracker'] : null);
-                
+
             // Fallback: If it's an object instead of array
             if (!$tracker && is_object($payment)) {
                 $tracker = isset($payment->tracker->token) ? $payment->tracker->token : ($payment->tracker ?? null);
@@ -84,9 +84,10 @@ class SafepayController extends Controller
                 if ($appointment && $appointment->payment_status !== 'paid') {
                     $appointment->payment_status = 'paid';
                     $appointment->status = 'Approved'; // Update main status
+                    $appointment->transaction_data = $payload;
                     $appointment->save();
                     Log::info('Appointment ' . $appointment->id . ' marked as paid and Approved via webhook.');
-                    
+
                     // Notify doctor and patient
                     $appointment->doctor->user->notify(new \App\Notifications\AppointmentNotification([
                         'message' => 'Payment received for appointment by ' . $appointment->patient->name,
@@ -95,7 +96,7 @@ class SafepayController extends Controller
                         'color' => 'text-success',
                         'type' => 'payment_success'
                     ]));
-                    
+
                     $appointment->patient->notify(new \App\Notifications\AppointmentNotification([
                         'message' => 'Payment successful for Dr. ' . $appointment->doctor->user->name,
                         'url' => route('patient.history'),

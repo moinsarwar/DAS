@@ -143,7 +143,7 @@ class PatientController extends Controller
 
                 $session = $safepay->order->setup([
                     "merchant_api_key" => $apiKey,
-
+                    "details" => "Doctor fees for Dr. " . $doctor->user->name . " on " . date('d-M-Y', strtotime($appointment->appointment_date)) . " Slot: " . date('h:i A', strtotime($appointment->time_slot)),
                     "mode" => "payment",
                     "currency" => "PKR",
                     "amount" => (int) ($appointment->fee * 100), // Minor units
@@ -203,7 +203,7 @@ class PatientController extends Controller
 
                 $session = $safepay->order->setup([
                     "merchant_api_key" => $apiKey,
-
+                    "details" => "Doctor fees for Dr. " . $appointment->doctor->user->name . " on " . date('d-M-Y', strtotime($appointment->appointment_date)) . " Slot: " . date('h:i A', strtotime($appointment->time_slot)),
                     "mode" => "payment",
                     "currency" => "PKR",
                     "amount" => (int) ($appointment->fee * 100),
