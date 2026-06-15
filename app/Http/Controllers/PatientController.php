@@ -212,7 +212,10 @@ class PatientController extends Controller
                     "currency" => "PKR",
                     "amount" => (int) ($appointment->fee * 100),
                     "order_id" => "APP-" . $appointment->id,
-                    "reference" => $detailsText
+                    "reference" => $detailsText,
+                    "metadata" => [
+                        "source" => $detailsText,
+                    ]
                 ]);
 
                 $tracker = $session->tracker->token ?? null;
@@ -282,15 +285,15 @@ class PatientController extends Controller
                     ]);
 
                     \Log::info('Initiating partial refund. Total Fee: ' . $app->fee . ', Refund: ' . $refundAmount);
-                    
+
                     // Send amount in paisas (minor units)
                     $safepay->order->refund($app->transaction_id, [
                         "amount" => (int) ($refundAmount * 100),
                         "currency" => "PKR"
                     ]);
-                    
+
                     \Log::info('Partial Refund successful for appointment ' . $app->id);
-                    
+
                     // Update refunded amount in DB
                     $app->refunded_amount += $refundAmount;
                     $app->save();
