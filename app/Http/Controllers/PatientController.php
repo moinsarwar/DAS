@@ -129,45 +129,51 @@ class PatientController extends Controller
         ]));
 
         // Initialize Safepay Payment
+        $apiSecret = config('services.safepay.api_secret');
         $apiKey = config('services.safepay.api_key');
         $environment = config('services.safepay.environment', 'sandbox');
-        $apiUrl = $environment === 'sandbox' ? 'https://sandbox.api.getsafepay.com' : 'https://api.getsafepay.com';
+        $apiBase = $environment === 'sandbox' ? 'https://sandbox.api.getsafepay.com' : 'https://api.getsafepay.com';
 
-        if ($apiKey && $appointment->fee > 0) {
+        if ($apiKey && $apiSecret && $appointment->fee > 0) {
             try {
-                $response = Http::post("{$apiUrl}/order/v1/init", [
-                    'client' => $apiKey,
-                    'amount' => (float) $appointment->fee,
-                    'currency' => 'PKR',
-                    'environment' => $environment,
+                $safepay = new \Safepay\SafepayClient([
+                    "api_key" => $apiSecret,
+                    "api_base" => $apiBase,
                 ]);
 
-                if ($response->successful()) {
-                    $tracker = $response->json('data.token') ?? $response->json('token');
-                    
-                    if ($tracker) {
-                        $appointment->transaction_id = $tracker;
-                        $appointment->save();
+                $session = $safepay->order->setup([
+                    "merchant_api_key" => $apiKey,
+                    "intent" => "CYBERSOURCE",
+                    "mode" => "payment",
+                    "currency" => "PKR",
+                    "amount" => (int) ($appointment->fee * 100), // Minor units
+                ]);
 
-                        $redirectUrl = route('safepay.callback', ['order_id' => $appointment->id]);
-                        $cancelUrl = route('safepay.cancel');
-                        
-                        $params = [
-                            'env' => $environment,
-                            'tracker' => $tracker,
-                            'source' => 'custom',
-                            'redirect_url' => $redirectUrl,
-                            'cancel_url' => $cancelUrl
-                        ];
-                        $checkoutUrl = "{$apiUrl}/checkout/pay?" . http_build_query($params);
+                $tracker = $session->tracker->token ?? null;
 
-                        return redirect()->away($checkoutUrl);
-                    }
-                } else {
-                    Log::error('Safepay Init Error: ' . $response->body());
+                if ($tracker) {
+                    $appointment->transaction_id = $tracker;
+                    $appointment->save();
+
+                    // Create Time Based Authentication token
+                    $tbt = $safepay->passport->create();
+
+                    $redirectUrl = route('safepay.callback', ['order_id' => $appointment->id]);
+                    $cancelUrl = route('safepay.cancel');
+
+                    $checkoutUrl = \Safepay\Checkout::constructURL([
+                        "environment" => $environment,
+                        "tracker" => $tracker,
+                        "tbt" => $tbt->token,
+                        "source" => "custom",
+                        "cancel_url" => $cancelUrl,
+                        "redirect_url" => $redirectUrl,
+                    ]);
+
+                    return redirect()->away($checkoutUrl);
                 }
             } catch (\Exception $e) {
-                Log::error('Safepay Exception: ' . $e->getMessage());
+                \Log::error('Safepay Exception: ' . $e->getMessage());
             }
         }
 
@@ -183,45 +189,51 @@ class PatientController extends Controller
             return back()->with('info', 'This appointment is already paid.');
         }
 
+        $apiSecret = config('services.safepay.api_secret');
         $apiKey = config('services.safepay.api_key');
         $environment = config('services.safepay.environment', 'sandbox');
-        $apiUrl = $environment === 'sandbox' ? 'https://sandbox.api.getsafepay.com' : 'https://api.getsafepay.com';
+        $apiBase = $environment === 'sandbox' ? 'https://sandbox.api.getsafepay.com' : 'https://api.getsafepay.com';
 
-        if ($apiKey && $appointment->fee > 0) {
+        if ($apiKey && $apiSecret && $appointment->fee > 0) {
             try {
-                $response = Http::post("{$apiUrl}/order/v1/init", [
-                    'client' => $apiKey,
-                    'amount' => (float) $appointment->fee,
-                    'currency' => 'PKR',
-                    'environment' => $environment,
+                $safepay = new \Safepay\SafepayClient([
+                    "api_key" => $apiSecret,
+                    "api_base" => $apiBase,
                 ]);
 
-                if ($response->successful()) {
-                    $tracker = $response->json('data.token') ?? $response->json('token');
-                    
-                    if ($tracker) {
-                        $appointment->transaction_id = $tracker;
-                        $appointment->save();
+                $session = $safepay->order->setup([
+                    "merchant_api_key" => $apiKey,
+                    "intent" => "CYBERSOURCE",
+                    "mode" => "payment",
+                    "currency" => "PKR",
+                    "amount" => (int) ($appointment->fee * 100),
+                ]);
 
-                        $redirectUrl = route('safepay.callback', ['order_id' => $appointment->id]);
-                        $cancelUrl = route('safepay.cancel');
-                        
-                        $params = [
-                            'env' => $environment,
-                            'tracker' => $tracker,
-                            'source' => 'custom',
-                            'redirect_url' => $redirectUrl,
-                            'cancel_url' => $cancelUrl
-                        ];
-                        $checkoutUrl = "{$apiUrl}/checkout/pay?" . http_build_query($params);
+                $tracker = $session->tracker->token ?? null;
 
-                        return redirect()->away($checkoutUrl);
-                    }
-                } else {
-                    Log::error('Safepay Init Error in payFee: ' . $response->body());
+                if ($tracker) {
+                    $appointment->transaction_id = $tracker;
+                    $appointment->save();
+
+                    // Create Time Based Authentication token
+                    $tbt = $safepay->passport->create();
+
+                    $redirectUrl = route('safepay.callback', ['order_id' => $appointment->id]);
+                    $cancelUrl = route('safepay.cancel');
+
+                    $checkoutUrl = \Safepay\Checkout::constructURL([
+                        "environment" => $environment,
+                        "tracker" => $tracker,
+                        "tbt" => $tbt->token,
+                        "source" => "custom",
+                        "cancel_url" => $cancelUrl,
+                        "redirect_url" => $redirectUrl,
+                    ]);
+
+                    return redirect()->away($checkoutUrl);
                 }
             } catch (\Exception $e) {
-                Log::error('Safepay Exception in payFee: ' . $e->getMessage());
+                \Log::error('Safepay Exception in payFee: ' . $e->getMessage());
             }
         }
 
